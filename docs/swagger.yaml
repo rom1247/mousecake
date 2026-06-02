@@ -1,0 +1,1815 @@
+basePath: /api/v1
+definitions:
+  Response:
+    properties:
+      code:
+        description: Code 业务状态码，0 表示成功，非 0 表示失败。
+        type: integer
+      data:
+        description: Data 响应数据载荷，成功时为业务数据，失败时为 nil。
+      message:
+        description: Message 响应消息描述。
+        type: string
+    type: object
+  internal_launchpad.CreateSaleInput:
+    properties:
+      admin:
+        description: Admin 管理员地址（合约参数）。
+        type: string
+      caller_address:
+        description: CallerAddress 管理员地址。
+        type: string
+      end_block:
+        description: EndBlock 销售结束区块号。
+        type: integer
+      mouse_tier:
+        description: MouseTier MouseTier 合约地址。
+        type: string
+      offering_token:
+        description: OfferingToken 发售代币地址。
+        type: string
+      raising_token:
+        description: RaisingToken 募资代币地址。
+        type: string
+      start_block:
+        description: StartBlock 销售开始区块号。
+        type: integer
+    required:
+    - admin
+    - caller_address
+    - end_block
+    - mouse_tier
+    - offering_token
+    - raising_token
+    - start_block
+    type: object
+  internal_launchpad.CreateSaleMetaInput:
+    properties:
+      banner_url:
+        type: string
+      description:
+        type: string
+      logo_url:
+        type: string
+      sale_id:
+        type: integer
+      social_links:
+        type: string
+      title:
+        type: string
+      visibility:
+        type: string
+      website_url:
+        type: string
+    required:
+    - sale_id
+    - title
+    type: object
+  internal_launchpad.CreateTokenInput:
+    properties:
+      address:
+        type: string
+      chain_id:
+        type: integer
+      decimals:
+        type: integer
+      logo_url:
+        type: string
+      name:
+        type: string
+      symbol:
+        type: string
+    required:
+    - address
+    - chain_id
+    - decimals
+    - name
+    - symbol
+    type: object
+  internal_launchpad.DepositInput:
+    properties:
+      amount:
+        type: string
+      caller_address:
+        type: string
+      pool_index:
+        type: integer
+      sale_id:
+        type: integer
+    required:
+    - amount
+    - caller_address
+    - pool_index
+    - sale_id
+    type: object
+  internal_launchpad.FinalWithdrawInput:
+    properties:
+      caller_address:
+        type: string
+      offering_amount:
+        type: string
+      raising_amount:
+        type: string
+    required:
+    - caller_address
+    - offering_amount
+    - raising_amount
+    type: object
+  internal_launchpad.HarvestInput:
+    properties:
+      caller_address:
+        type: string
+      pool_index:
+        type: integer
+      sale_id:
+        type: integer
+    required:
+    - caller_address
+    - pool_index
+    - sale_id
+    type: object
+  internal_launchpad.RecoverTokenInput:
+    properties:
+      amount:
+        type: string
+      caller_address:
+        type: string
+      to:
+        type: string
+      token_address:
+        type: string
+    required:
+    - amount
+    - caller_address
+    - to
+    - token_address
+    type: object
+  internal_launchpad.ReleaseInput:
+    properties:
+      caller_address:
+        type: string
+      schedule_id:
+        type: integer
+    required:
+    - caller_address
+    - schedule_id
+    type: object
+  internal_launchpad.RevokeInput:
+    properties:
+      caller_address:
+        type: string
+      pool_index:
+        type: integer
+      sale_id:
+        type: integer
+    required:
+    - caller_address
+    - pool_index
+    - sale_id
+    type: object
+  internal_launchpad.SetPoolInput:
+    properties:
+      caller_address:
+        type: string
+      has_tax:
+        type: boolean
+      is_special_sale:
+        type: boolean
+      limit_per_user:
+        type: string
+      offering_amount:
+        type: string
+      pool_index:
+        type: integer
+      raising_amount:
+        type: string
+      sale_id:
+        type: integer
+      vesting_cliff:
+        type: integer
+      vesting_duration:
+        type: integer
+      vesting_percentage:
+        type: integer
+      vesting_slice_period:
+        type: integer
+    required:
+    - caller_address
+    - has_tax
+    - is_special_sale
+    - limit_per_user
+    - offering_amount
+    - pool_index
+    - raising_amount
+    - sale_id
+    - vesting_cliff
+    - vesting_duration
+    - vesting_percentage
+    - vesting_slice_period
+    type: object
+  internal_launchpad.SetStartEndBlockInput:
+    properties:
+      caller_address:
+        type: string
+      end_block:
+        type: integer
+      sale_id:
+        type: integer
+      start_block:
+        type: integer
+    required:
+    - caller_address
+    - end_block
+    - sale_id
+    - start_block
+    type: object
+  internal_launchpad.SetTierLimitsInput:
+    properties:
+      caller_address:
+        type: string
+      limit:
+        type: string
+      tier:
+        type: integer
+    required:
+    - caller_address
+    - limit
+    - tier
+    type: object
+  internal_launchpad.SubmitPrepareRequest:
+    properties:
+      id:
+        type: integer
+      tx_hash:
+        type: string
+    required:
+    - id
+    - tx_hash
+    type: object
+  internal_launchpad.UpdateSaleMetaInput:
+    properties:
+      banner_url:
+        type: string
+      description:
+        type: string
+      logo_url:
+        type: string
+      sale_id:
+        type: integer
+      social_links:
+        type: string
+      title:
+        type: string
+      visibility:
+        type: string
+      website_url:
+        type: string
+    required:
+    - sale_id
+    type: object
+  internal_launchpad.UpdateTokenInput:
+    properties:
+      decimals:
+        type: integer
+      id:
+        type: integer
+      logo_url:
+        type: string
+      name:
+        type: string
+      symbol:
+        type: string
+    required:
+    - id
+    type: object
+  internal_launchpad.WhitelistInput:
+    properties:
+      caller_address:
+        type: string
+      sale_id:
+        type: integer
+      users:
+        items:
+          type: string
+        type: array
+    required:
+    - caller_address
+    - sale_id
+    - users
+    type: object
+  internal_launchpad_domain.PrepareTx:
+    properties:
+      blockNumber:
+        description: BlockNumber 链上交易所在区块高度，确认后填充。
+        format: int64
+        type: integer
+      calldata:
+        description: Calldata 编码后的合约调用数据（hex）。
+        type: string
+      calldataHash:
+        description: CalldataHash 调用数据的哈希，用于前端验证数据完整性。
+        type: string
+      callerAddress:
+        description: CallerAddress 发起调用的用户或管理员地址。
+        type: string
+      confirmedAt:
+        description: ConfirmedAt 链上确认时间。
+        type: string
+      createdAt:
+        description: CreatedAt 记录创建时间。
+        type: string
+      errorMessage:
+        description: ErrorMessage 失败时的错误信息。
+        type: string
+      expiresAt:
+        description: ExpiresAt 交易过期时间，过期后不可再提交。
+        type: string
+      id:
+        description: ID 数据库主键。
+        format: int64
+        type: integer
+      operationType:
+        allOf:
+        - $ref: '#/definitions/internal_launchpad_domain.PrepareTxOperationType'
+        description: OperationType 操作类型（创建合约、设置池参数、申购、结算等）。
+      poolIndex:
+        description: PoolIndex 关联的池子索引，部分操作可能为 nil。
+        format: int64
+        type: integer
+      saleID:
+        description: SaleID 关联的销售 ID，部分操作（如创建合约）可能为 nil。
+        format: int64
+        type: integer
+      status:
+        allOf:
+        - $ref: '#/definitions/internal_launchpad_domain.PrepareTxStatus'
+        description: Status 交易当前状态。
+      txHash:
+        description: TxHash 链上交易哈希，广播后填充。
+        type: string
+      updatedAt:
+        description: UpdatedAt 记录更新时间。
+        type: string
+    type: object
+  internal_launchpad_domain.PrepareTxOperationType:
+    enum:
+    - create_sale
+    - set_pool
+    - set_tier_limits
+    - add_whitelist
+    - remove_whitelist
+    - set_start_end_block
+    - revoke
+    - final_withdraw
+    - recover_token
+    - deposit
+    - harvest
+    - release
+    type: string
+    x-enum-varnames:
+    - OpCreateSale
+    - OpSetPool
+    - OpSetTierLimits
+    - OpAddWhitelist
+    - OpRemoveWhitelist
+    - OpSetStartEndBlock
+    - OpRevoke
+    - OpFinalWithdraw
+    - OpRecoverToken
+    - OpDeposit
+    - OpHarvest
+    - OpRelease
+  internal_launchpad_domain.PrepareTxStatus:
+    enum:
+    - pending
+    - signed
+    - broadcast
+    - confirmed
+    - reverted
+    - expired
+    - failed
+    type: string
+    x-enum-varnames:
+    - PrepareTxPending
+    - PrepareTxSigned
+    - PrepareTxBroadcast
+    - PrepareTxConfirmed
+    - PrepareTxReverted
+    - PrepareTxExpired
+    - PrepareTxFailed
+  internal_launchpad_domain.SaleMeta:
+    properties:
+      bannerURL:
+        description: BannerURL 横幅图片 URL。
+        type: string
+      createdAt:
+        description: CreatedAt 记录创建时间。
+        type: string
+      description:
+        description: Description 销售详细描述。
+        type: string
+      id:
+        description: ID 数据库主键。
+        format: int64
+        type: integer
+      logoURL:
+        description: LogoURL Logo 图片 URL。
+        type: string
+      saleID:
+        description: SaleID 关联的销售 ID。
+        format: int64
+        type: integer
+      socialLinks:
+        description: SocialLinks 社交媒体链接，JSON 格式存储。
+        type: string
+      sortOrder:
+        description: SortOrder 排序权重，值越小越靠前。
+        type: integer
+      title:
+        description: Title 销售展示标题。
+        type: string
+      updatedAt:
+        description: UpdatedAt 记录更新时间。
+        type: string
+      visibility:
+        description: Visibility 可见性控制：public 或 hidden。
+        type: string
+      websiteURL:
+        description: WebsiteURL 项目官网 URL。
+        type: string
+    type: object
+  internal_launchpad_domain.Token:
+    properties:
+      address:
+        description: Address 链上代币合约地址。
+        type: string
+      chainID:
+        description: ChainID 所属链 ID。
+        type: integer
+      createdAt:
+        description: CreatedAt 记录创建时间。
+        type: string
+      decimals:
+        description: Decimals 代币精度位数。
+        type: integer
+      id:
+        description: ID 数据库主键。
+        format: int64
+        type: integer
+      logoURL:
+        description: LogoURL 代币 Logo 图片 URL。
+        type: string
+      name:
+        description: Name 代币名称（如 Tether USD）。
+        type: string
+      symbol:
+        description: Symbol 代币符号（如 USDT）。
+        type: string
+      updatedAt:
+        description: UpdatedAt 记录更新时间。
+        type: string
+    type: object
+  internal_quote.getSwapRequest:
+    properties:
+      amount:
+        example: "1000000000000000000"
+        type: string
+      chain_id:
+        example: 1
+        type: integer
+      from_token:
+        example: 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
+        type: string
+      provider:
+        example: okx
+        type: string
+      slippage_percent:
+        example: 0.5
+        type: number
+      swap_mode:
+        example: exactIn
+        type: string
+      to_token:
+        example: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+        type: string
+      user_wallet_address:
+        example: 0x1234567890abcdef1234567890abcdef12345678
+        type: string
+    required:
+    - amount
+    - chain_id
+    - from_token
+    - provider
+    - swap_mode
+    - to_token
+    - user_wallet_address
+    type: object
+  internal_quote.submitSwapRequest:
+    properties:
+      tx_hash:
+        example: 0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890
+        type: string
+    required:
+    - tx_hash
+    type: object
+  internal_user.adminLoginRequest:
+    properties:
+      password:
+        example: '********'
+        type: string
+      username:
+        example: admin
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  internal_user.nonceResponse:
+    properties:
+      message:
+        example: mousecake-go wants you to sign in...
+        type: string
+      nonce:
+        example: abc123def456
+        type: string
+    type: object
+  internal_user.tokenResponse:
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIs...
+        type: string
+      expires_in:
+        example: 900
+        type: integer
+      token_type:
+        example: Bearer
+        type: string
+    type: object
+  internal_user.userInfoResponse:
+    properties:
+      address:
+        example: 0x1234567890abcdef1234567890abcdef12345678
+        type: string
+      id:
+        example: 1
+        type: integer
+      is_admin:
+        example: false
+        type: boolean
+      name:
+        example: 张三
+        type: string
+      nickname:
+        example: mouse
+        type: string
+      type:
+        example: wallet
+        type: string
+      username:
+        example: admin
+        type: string
+    type: object
+  internal_user.walletNonceRequest:
+    properties:
+      address:
+        example: 0x1234567890abcdef1234567890abcdef12345678
+        type: string
+    required:
+    - address
+    type: object
+  internal_user.walletVerifyRequest:
+    properties:
+      message:
+        example: mousecake-go wants you to sign in with your Ethereum account...
+        type: string
+      signature:
+        example: 0xabcdef...
+        type: string
+    required:
+    - message
+    - signature
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: mousecake-go 区块链后端服务 API 文档，包含用户认证、报价聚合等模块。
+  title: mousecake-go API
+  version: "1.0"
+paths:
+  /api/v1/launchpad/admin/prepare/add-whitelist:
+    post:
+      consumes:
+      - application/json
+      description: 管理员将用户地址添加到销售白名单
+      parameters:
+      - description: 白名单参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.WhitelistInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 添加白名单
+      tags:
+      - Launchpad-管理员
+  /api/v1/launchpad/admin/prepare/create-sale:
+    post:
+      consumes:
+      - application/json
+      description: 管理员创建新的 IDO 销售合约，生成链上交易数据
+      parameters:
+      - description: 创建销售参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.CreateSaleInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 创建 IDO 销售
+      tags:
+      - Launchpad-管理员
+  /api/v1/launchpad/admin/prepare/final-withdraw:
+    post:
+      consumes:
+      - application/json
+      description: 管理员提取销售结束后的募资和剩余发售代币
+      parameters:
+      - description: 提取参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.FinalWithdrawInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 提取资金
+      tags:
+      - Launchpad-管理员
+  /api/v1/launchpad/admin/prepare/recover-token:
+    post:
+      consumes:
+      - application/json
+      description: 管理员将误转入合约的代币提取到指定地址
+      parameters:
+      - description: 救援代币参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.RecoverTokenInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 救援误转代币
+      tags:
+      - Launchpad-管理员
+  /api/v1/launchpad/admin/prepare/remove-whitelist:
+    post:
+      consumes:
+      - application/json
+      description: 管理员将用户地址从销售白名单中移除
+      parameters:
+      - description: 白名单参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.WhitelistInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 移除白名单
+      tags:
+      - Launchpad-管理员
+  /api/v1/launchpad/admin/prepare/revoke:
+    post:
+      consumes:
+      - application/json
+      description: 管理员撤销指定池的 vesting 计划
+      parameters:
+      - description: 撤销参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.RevokeInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 撤销 vesting
+      tags:
+      - Launchpad-管理员
+  /api/v1/launchpad/admin/prepare/set-pool:
+    post:
+      consumes:
+      - application/json
+      description: 管理员设置 IDO 销售池的参数（发售量、募资量、用户限额、vesting 配置等）
+      parameters:
+      - description: 池参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.SetPoolInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 设置池参数
+      tags:
+      - Launchpad-管理员
+  /api/v1/launchpad/admin/prepare/set-start-end-block:
+    post:
+      consumes:
+      - application/json
+      description: 管理员设置销售的开始和结束区块号
+      parameters:
+      - description: 时间窗参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.SetStartEndBlockInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 设置销售时间窗
+      tags:
+      - Launchpad-管理员
+  /api/v1/launchpad/admin/prepare/set-tier-limits:
+    post:
+      consumes:
+      - application/json
+      description: 管理员设置指定 Tier 的认购额度限制
+      parameters:
+      - description: Tier 额度参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.SetTierLimitsInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 设置 Tier 额度
+      tags:
+      - Launchpad-管理员
+  /api/v1/launchpad/admin/sale-meta:
+    post:
+      consumes:
+      - application/json
+      description: 管理员为销售创建展示元信息（标题、描述、Banner 等）
+      parameters:
+      - description: 销售元信息
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.CreateSaleMetaInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.SaleMeta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 创建销售元信息
+      tags:
+      - Launchpad-管理员
+    put:
+      consumes:
+      - application/json
+      description: 管理员更新销售的展示元信息
+      parameters:
+      - description: 更新元信息
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.UpdateSaleMetaInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.SaleMeta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 更新销售元信息
+      tags:
+      - Launchpad-管理员
+  /api/v1/launchpad/admin/token:
+    post:
+      consumes:
+      - application/json
+      description: 管理员创建代币的元信息（名称、符号、精度等）
+      parameters:
+      - description: 代币信息
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.CreateTokenInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.Token'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 创建代币信息
+      tags:
+      - Launchpad-管理员
+    put:
+      consumes:
+      - application/json
+      description: 管理员更新代币的元信息
+      parameters:
+      - description: 更新代币信息
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.UpdateTokenInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.Token'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 更新代币信息
+      tags:
+      - Launchpad-管理员
+  /api/v1/launchpad/prepare/{id}:
+    get:
+      description: 根据 ID 获取 Prepare 交易的详细信息
+      parameters:
+      - description: Prepare ID
+        example: 1
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 获取 Prepare 详情
+      tags:
+      - Launchpad-通用
+  /api/v1/launchpad/prepare/cancel/{id}:
+    post:
+      description: 取消指定 ID 的 Prepare 交易
+      parameters:
+      - description: Prepare ID
+        example: 1
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 取消 Prepare 交易
+      tags:
+      - Launchpad-通用
+  /api/v1/launchpad/prepare/submit:
+    post:
+      consumes:
+      - application/json
+      description: 提交已广播的链上交易哈希，完成 Prepare 记录
+      parameters:
+      - description: 提交参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.SubmitPrepareRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 提交 Prepare 交易
+      tags:
+      - Launchpad-通用
+  /api/v1/launchpad/user/deposits:
+    get:
+      description: 查询用户在指定销售中的申购记录
+      parameters:
+      - description: 销售 ID
+        in: query
+        name: sale_id
+        required: true
+        type: integer
+      - description: 用户钱包地址
+        in: query
+        name: user_address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 获取用户申购记录
+      tags:
+      - Launchpad-用户
+  /api/v1/launchpad/user/estimate-allocation:
+    get:
+      consumes:
+      - application/json
+      description: 根据用户投入金额预估可获得的发售代币数量
+      parameters:
+      - description: 销售 ID
+        in: query
+        name: sale_id
+        required: true
+        type: integer
+      - description: 池索引
+        in: query
+        name: pool_index
+        required: true
+        type: integer
+      - description: 用户投入金额
+        in: query
+        name: user_total
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 预估配售
+      tags:
+      - Launchpad-用户
+  /api/v1/launchpad/user/harvest:
+    get:
+      description: 查询用户在指定销售中的结算记录
+      parameters:
+      - description: 销售 ID
+        in: query
+        name: sale_id
+        required: true
+        type: integer
+      - description: 用户钱包地址
+        in: query
+        name: user_address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 获取用户结算记录
+      tags:
+      - Launchpad-用户
+  /api/v1/launchpad/user/prepare/deposit:
+    post:
+      consumes:
+      - application/json
+      description: 用户参与 IDO 申购，校验资格后生成链上交易数据
+      parameters:
+      - description: 申购参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.DepositInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 用户申购
+      tags:
+      - Launchpad-用户
+  /api/v1/launchpad/user/prepare/harvest:
+    post:
+      consumes:
+      - application/json
+      description: 用户结算 IDO 认购结果，生成链上交易数据
+      parameters:
+      - description: 结算参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.HarvestInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 用户结算
+      tags:
+      - Launchpad-用户
+  /api/v1/launchpad/user/prepare/release:
+    post:
+      consumes:
+      - application/json
+      description: 用户释放 vesting 锁仓代币，生成链上交易数据
+      parameters:
+      - description: 释放参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_launchpad.ReleaseInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_launchpad_domain.PrepareTx'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 用户释放 vesting
+      tags:
+      - Launchpad-用户
+  /api/v1/launchpad/user/sales:
+    get:
+      description: 分页获取公开的 IDO 销售列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 获取销售列表
+      tags:
+      - Launchpad-用户
+  /api/v1/launchpad/user/sales/{id}:
+    get:
+      description: 根据 ID 获取 IDO 销售的详细信息
+      parameters:
+      - description: 销售 ID
+        example: 1
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 获取销售详情
+      tags:
+      - Launchpad-用户
+  /api/v1/launchpad/user/tier:
+    get:
+      description: 根据链上 MouseTier 合约查询用户的 Tier 等级
+      parameters:
+      - description: MouseTier 合约地址
+        in: query
+        name: mouse_tier_address
+        required: true
+        type: string
+      - description: 用户钱包地址
+        in: query
+        name: user_address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 获取用户 Tier 等级
+      tags:
+      - Launchpad-用户
+  /api/v1/launchpad/user/vesting:
+    get:
+      description: 查询用户的 vesting 锁仓释放计划
+      parameters:
+      - description: 受益人钱包地址
+        in: query
+        name: beneficiary
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 获取用户 vesting 计划
+      tags:
+      - Launchpad-用户
+  /api/v1/launchpad/user/whitelist-check:
+    get:
+      description: 检查用户是否在指定销售的白名单中
+      parameters:
+      - description: 销售 ID
+        in: query
+        name: sale_id
+        required: true
+        type: integer
+      - description: 用户钱包地址
+        in: query
+        name: user_address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 检查白名单
+      tags:
+      - Launchpad-用户
+  /auth/admin/login:
+    post:
+      consumes:
+      - application/json
+      description: 使用用户名和密码登录管理员账号，签发 JWT token
+      parameters:
+      - description: 管理员登录请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_user.adminLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_user.tokenResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 管理员登录
+      tags:
+      - 认证
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: 根据 Bearer Token 获取当前登录用户信息
+      parameters:
+      - default: Bearer
+        description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_user.userInfoResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Response'
+      security:
+      - BearerAuth: []
+      summary: 获取当前用户信息
+      tags:
+      - 认证
+  /auth/wallet/nonce:
+    post:
+      consumes:
+      - application/json
+      description: 根据钱包地址生成 SIWE 登录消息和 nonce
+      parameters:
+      - description: 钱包地址
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_user.walletNonceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_user.nonceResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 获取钱包登录 nonce
+      tags:
+      - 认证
+  /auth/wallet/verify:
+    post:
+      consumes:
+      - application/json
+      description: 验证 SIWE 消息签名，签发 JWT token
+      parameters:
+      - description: 签名验证请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_user.walletVerifyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_user.tokenResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 验证钱包签名
+      tags:
+      - 认证
+  /providers:
+    get:
+      description: 获取当前可用的报价供应商列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 获取供应商列表
+      tags:
+      - 报价
+  /quote:
+    get:
+      consumes:
+      - application/json
+      description: 根据指定参数从供应商获取代币兑换报价
+      parameters:
+      - description: 供应商名称
+        enum:
+        - okx
+        - zerox
+        in: query
+        name: provider
+        required: true
+        type: string
+      - description: 链 ID
+        example: 1
+        in: query
+        name: chain_id
+        required: true
+        type: integer
+      - description: 源代币地址
+        example: 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
+        in: query
+        name: from_token
+        required: true
+        type: string
+      - description: 目标代币地址
+        example: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+        in: query
+        name: to_token
+        required: true
+        type: string
+      - description: 兑换数量
+        example: "1000000000000000000"
+        in: query
+        name: amount
+        required: true
+        type: string
+      - description: 兑换模式
+        enum:
+        - exactIn
+        - exactOut
+        in: query
+        name: swap_mode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 获取报价
+      tags:
+      - 报价
+  /swap:
+    post:
+      consumes:
+      - application/json
+      description: 根据报价参数获取链上交易所需的交易数据
+      parameters:
+      - description: 获取交易数据请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_quote.getSwapRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 获取交易数据
+      tags:
+      - 报价
+  /swap/{id}/submit:
+    post:
+      consumes:
+      - application/json
+      description: 提交已广播的链上交易哈希，完成 swap 记录
+      parameters:
+      - description: Swap 记录 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 交易哈希
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_quote.submitSwapRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 提交交易哈希
+      tags:
+      - 报价
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

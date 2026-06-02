@@ -26,7 +26,11 @@ go.work.sum
 
 # env file
 .env
+.env.*.local
+
+# 本地配置覆盖（可能包含敏感信息）
+config/app.local.yaml
 
 # Editor/IDE
-# .idea/
-# .vscode/
+.idea
+.vscode

@@ -1,0 +1,303 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mousecake-go/mousecake-go/config/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "AdminConfig": {
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "username",
+        "password"
+      ]
+    },
+    "ChainsConfig": {
+      "properties": {
+        "allowed_chain_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "allowed_chain_ids"
+      ]
+    },
+    "Config": {
+      "properties": {
+        "server": {
+          "$ref": "#/$defs/ServerConfig"
+        },
+        "database": {
+          "$ref": "#/$defs/DatabaseConfig"
+        },
+        "jwt": {
+          "$ref": "#/$defs/JWTConfig"
+        },
+        "rate_limit": {
+          "$ref": "#/$defs/RateLimitConfig"
+        },
+        "admin": {
+          "$ref": "#/$defs/AdminConfig"
+        },
+        "chains": {
+          "$ref": "#/$defs/ChainsConfig"
+        },
+        "launchpad": {
+          "$ref": "#/$defs/LaunchpadConfig"
+        },
+        "quote": {
+          "$ref": "#/$defs/QuoteConfig"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "server",
+        "database",
+        "jwt",
+        "rate_limit",
+        "admin",
+        "chains",
+        "launchpad",
+        "quote"
+      ]
+    },
+    "DatabaseConfig": {
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "user": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "dbname": {
+          "type": "string"
+        },
+        "sslmode": {
+          "type": "string"
+        },
+        "max_open_conns": {
+          "type": "integer"
+        },
+        "max_idle_conns": {
+          "type": "integer"
+        },
+        "conn_max_lifetime": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$"
+        },
+        "conn_max_idle_time": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$"
+        },
+        "log_level": {
+          "type": "string"
+        },
+        "slow_threshold": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "host",
+        "port",
+        "user",
+        "password",
+        "dbname",
+        "sslmode",
+        "max_open_conns",
+        "max_idle_conns",
+        "conn_max_lifetime",
+        "conn_max_idle_time",
+        "log_level",
+        "slow_threshold"
+      ]
+    },
+    "JWTConfig": {
+      "properties": {
+        "secret": {
+          "type": "string"
+        },
+        "wallet_expire": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$"
+        },
+        "admin_expire": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "secret",
+        "wallet_expire",
+        "admin_expire"
+      ]
+    },
+    "LaunchpadConfig": {
+      "properties": {
+        "rpc_url": {
+          "type": "string"
+        },
+        "chain_id": {
+          "type": "integer"
+        },
+        "mouse_pad_by_tier_abi": {
+          "type": "string"
+        },
+        "mouse_tier_abi": {
+          "type": "string"
+        },
+        "mouse_tier_address": {
+          "type": "string"
+        },
+        "mouse_pad_by_tier_address": {
+          "type": "string"
+        },
+        "prepare_expires_in": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$"
+        },
+        "poll_interval": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$"
+        },
+        "rpc_timeout": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "rpc_url",
+        "chain_id",
+        "mouse_pad_by_tier_abi",
+        "mouse_tier_abi",
+        "mouse_tier_address",
+        "mouse_pad_by_tier_address",
+        "prepare_expires_in",
+        "poll_interval",
+        "rpc_timeout"
+      ]
+    },
+    "ProviderConfig": {
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "api_key": {
+          "type": "string"
+        },
+        "secret_key": {
+          "type": "string"
+        },
+        "passphrase": {
+          "type": "string"
+        },
+        "base_url": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "enabled",
+        "api_key",
+        "secret_key",
+        "passphrase",
+        "base_url"
+      ]
+    },
+    "QuoteConfig": {
+      "properties": {
+        "cache_ttl": {
+          "type": "integer"
+        },
+        "providers": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ProviderConfig"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "cache_ttl",
+        "providers"
+      ]
+    },
+    "RateLimitConfig": {
+      "properties": {
+        "ip": {
+          "$ref": "#/$defs/RateLimitRule"
+        },
+        "account": {
+          "$ref": "#/$defs/RateLimitRule"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "ip",
+        "account"
+      ]
+    },
+    "RateLimitRule": {
+      "properties": {
+        "rate": {
+          "type": "number"
+        },
+        "burst": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "rate",
+        "burst"
+      ]
+    },
+    "ServerConfig": {
+      "properties": {
+        "port": {
+          "type": "integer"
+        },
+        "mode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "port",
+        "mode"
+      ]
+    }
+  },
+  "title": "MouseCake Go 配置",
+  "description": "mousecake-go 应用的 YAML 配置文件 Schema"
+}

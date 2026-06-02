@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=./app.schema.json
+# 敏感配置通过 ${ENV_VAR} 引用环境变量，启动前必须在 .env 或系统环境中设置。
+# 环境变量说明参见项目根目录 .env.example
+
+server:
+  port: 8080
+  mode: debug
+
+database:
+  host: "${MOUSECAKE_DATABASE_HOST}"
+  port: 5432
+  user: "${MOUSECAKE_DATABASE_USER}"
+  password: "${MOUSECAKE_DATABASE_PASSWORD}"
+  dbname: mousecake
+  sslmode: disable
+  max_open_conns: 25
+  max_idle_conns: 10
+  conn_max_lifetime: 30m
+  conn_max_idle_time: 5m
+  log_level: info
+  slow_threshold: 200ms
+
+jwt:
+  secret: "${MOUSECAKE_JWT_SECRET}"
+  wallet_expire: 16m
+  admin_expire: 15m
+
+rate_limit:
+  ip:
+    rate: 20
+    burst: 30
+  account:
+    rate: 10
+    burst: 15
+
+admin:
+  username: admin
+  password: "${MOUSECAKE_ADMIN_PASSWORD}"
+
+chains:
+  allowed_chain_ids:
+    - 1
+    - 5
+    - 11155111
+log:
+  level: info
+  format: json
+  add_source: false
+quote:
+  providers:
+    okx:
+      enabled: true
+      base_url: https://web3.okx.com
+      api_key: "${MOUSECAKE_QUOTE_OKX_API_KEY}"
+      secret_key: "${MOUSECAKE_QUOTE_OKX_SECRET_KEY}"
+      passphrase: "${MOUSECAKE_QUOTE_OKX_PASSPHRASE}"
+  cache_ttl: 10
+
+sync:
+  chains:
+    - chain_id: 11155111
+      start_block: 0
+      confirmation_blocks: 12
+      block_interval: 12s
+      processor_id: launchpad
+      contracts:
+        mouse_tier: "${MOUSECAKE_SYNC_MOUSE_TIER_ADDRESS}"
+        mouse_pad_by_tier: "${MOUSECAKE_SYNC_MOUSE_PAD_BY_TIER_ADDRESS}"
+      nodes:
+        - name: alchemy-sepolia
+          ws_url: "wss://base-sepolia.g.alchemy.com/v2/${MOUSECAKE_ALCHEMY_API_KEY}"
+          http_url: "https://base-sepolia.g.alchemy.com/v2/${MOUSECAKE_ALCHEMY_API_KEY}"
+          priority: 0
+          timeout: 10s
+          rate_limit: 50
+          circuit_breaker:
+            failure_threshold: 5
+            timeout: 30s
+            max_requests: 3
+  backfill:
+    initial_batch_size: 5000
+    min_batch_size: 500
+    max_batch_size: 10000
+    growth_factor: 1.2
+  projector:
+    max_workers: 4
+    max_retries: 3
+    processing_timeout: 5m
+    poll_interval: 1s
+  worker:
+    shutdown_timeout: 30s
+    health_port: 9090
