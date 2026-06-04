@@ -20,6 +20,8 @@ import (
 type NodePool interface {
 	// CallContract 执行合约 view 调用。
 	CallContract(ctx context.Context, msg ethereum.CallMsg, blockNumber *big.Int) ([]byte, error)
+	// BatchCallContract 批量执行合约 view 调用，将多个 eth_call 合并为单次 JSON-RPC 2.0 批量请求。
+	BatchCallContract(ctx context.Context, calls []ethereum.CallMsg) ([][]byte, error)
 	// FilterLogs 使用过滤器查询日志。
 	FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error)
 	// TransactionReceipt 查询交易 Receipt。
@@ -30,6 +32,14 @@ type NodePool interface {
 	HeaderByNumber(ctx context.Context, number *big.Int) (*types.Header, error)
 	// SubscribeLogs 订阅实时日志。
 	SubscribeLogs(ctx context.Context, query ethereum.FilterQuery) (chan types.Log, ethereum.Subscription, error)
+	// PendingNonceAt 查询指定地址的 pending nonce。
+	PendingNonceAt(ctx context.Context, account common.Address) (uint64, error)
+	// EstimateGas 估算交易 gas 用量。
+	EstimateGas(ctx context.Context, msg ethereum.CallMsg) (uint64, error)
+	// SendTransaction 广播签名后的交易。
+	SendTransaction(ctx context.Context, tx *types.Transaction) error
+	// SuggestGasPrice 获取当前链建议的 gas 价格。
+	SuggestGasPrice(ctx context.Context) (*big.Int, error)
 	// Close 关闭所有节点连接。
 	Close()
 }
@@ -96,6 +106,29 @@ func (np *nodePool) CallContract(ctx context.Context, msg ethereum.CallMsg, bloc
 			continue
 		}
 		return result.([]byte), nil
+	}
+	return nil, ErrAllNodesUnavailable
+}
+
+// BatchCallContract 批量执行合约 view 调用，复用现有节点选择和熔断机制。
+func (np *nodePool) BatchCallContract(ctx context.Context, calls []ethereum.CallMsg) ([][]byte, error) {
+	if len(calls) == 0 {
+		return nil, nil
+	}
+	for _, n := range np.nodes {
+		if !n.isAvailable() {
+			continue
+		}
+		result, err := n.execute(func(n *node) (any, error) {
+			return n.batchCallContract(ctx, calls)
+		})
+		if err != nil {
+			if is429Error(err) {
+				n.setRateLimited(time.Now().Add(5 * time.Second))
+			}
+			continue
+		}
+		return result.([][]byte), nil
 	}
 	return nil, ErrAllNodesUnavailable
 }
@@ -193,6 +226,87 @@ func (np *nodePool) SubscribeLogs(ctx context.Context, query ethereum.FilterQuer
 		return ch, sub, nil
 	}
 	return nil, nil, ErrAllNodesUnavailable
+}
+
+// PendingNonceAt 查询指定地址的 pending nonce。
+// 写操作策略：只需优先级最高的节点成功即可，无需遍历所有节点。
+func (np *nodePool) PendingNonceAt(ctx context.Context, account common.Address) (uint64, error) {
+	for _, n := range np.nodes {
+		if !n.isAvailable() {
+			continue
+		}
+		result, err := n.execute(func(n *node) (any, error) {
+			return n.pendingNonceAt(ctx, account)
+		})
+		if err != nil {
+			if is429Error(err) {
+				n.setRateLimited(time.Now().Add(5 * time.Second))
+			}
+			continue
+		}
+		return result.(uint64), nil
+	}
+	return 0, ErrAllNodesUnavailable
+}
+
+// EstimateGas 估算交易 gas 用量。
+func (np *nodePool) EstimateGas(ctx context.Context, msg ethereum.CallMsg) (uint64, error) {
+	for _, n := range np.nodes {
+		if !n.isAvailable() {
+			continue
+		}
+		result, err := n.execute(func(n *node) (any, error) {
+			return n.estimateGas(ctx, msg)
+		})
+		if err != nil {
+			if is429Error(err) {
+				n.setRateLimited(time.Now().Add(5 * time.Second))
+			}
+			continue
+		}
+		return result.(uint64), nil
+	}
+	return 0, ErrAllNodesUnavailable
+}
+
+// SendTransaction 广播签名后的交易。
+func (np *nodePool) SendTransaction(ctx context.Context, tx *types.Transaction) error {
+	for _, n := range np.nodes {
+		if !n.isAvailable() {
+			continue
+		}
+		_, err := n.execute(func(n *node) (any, error) {
+			return nil, n.sendTransaction(ctx, tx)
+		})
+		if err != nil {
+			if is429Error(err) {
+				n.setRateLimited(time.Now().Add(5 * time.Second))
+			}
+			continue
+		}
+		return nil
+	}
+	return ErrAllNodesUnavailable
+}
+
+// SuggestGasPrice 获取当前链建议的 gas 价格。
+func (np *nodePool) SuggestGasPrice(ctx context.Context) (*big.Int, error) {
+	for _, n := range np.nodes {
+		if !n.isAvailable() {
+			continue
+		}
+		result, err := n.execute(func(n *node) (any, error) {
+			return n.suggestGasPrice(ctx)
+		})
+		if err != nil {
+			if is429Error(err) {
+				n.setRateLimited(time.Now().Add(5 * time.Second))
+			}
+			continue
+		}
+		return result.(*big.Int), nil
+	}
+	return nil, ErrAllNodesUnavailable
 }
 
 // Close 关闭所有节点连接。

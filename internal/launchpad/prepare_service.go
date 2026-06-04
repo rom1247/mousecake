@@ -22,6 +22,10 @@ type CreatePrepareInput struct {
 	PoolIndex *int64 `json:"pool_index"`
 	// Calldata 可选的预编码 calldata（由上层管理员/用户用例填充）。
 	Calldata []byte `json:"-"`
+	// TargetAddress 目标合约地址（to），签名广播时使用。
+	TargetAddress string `json:"target_address"`
+	// Value 原生代币数量（wei），签名广播时使用。
+	Value string `json:"value"`
 }
 
 // PrepareService 编排 Prepare 交易的创建、提交确认、超时轮询和取消。
@@ -81,6 +85,8 @@ func (s *PrepareService) Create(ctx context.Context, input CreatePrepareInput) (
 		PoolIndex:     input.PoolIndex,
 		OperationType: opType,
 		CallerAddress: input.CallerAddress,
+		TargetAddress: input.TargetAddress,
+		Value:         input.Value,
 		Calldata:      calldataHex,
 		CalldataHash:  calldataHash,
 		Status:        domain.PrepareTxPending,

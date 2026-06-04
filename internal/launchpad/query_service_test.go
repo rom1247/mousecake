@@ -161,7 +161,7 @@ var now = time.Now()
 func TestUserQueryService_ListPublicSales(t *testing.T) {
 	saleRepo := &mockQuerySaleRepo{
 		sales: []*domain.Sale{
-			domain.ReconstructSale(1, "0x1", 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil),
+			domain.ReconstructSale(1, "0x1", domain.SaleDeployed, 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil),
 		},
 		total: 1,
 	}
@@ -175,7 +175,7 @@ func TestUserQueryService_ListPublicSales(t *testing.T) {
 }
 
 func TestUserQueryService_GetSaleDetail(t *testing.T) {
-	sale := domain.ReconstructSale(1, "0x1", 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
+	sale := domain.ReconstructSale(1, "0x1", domain.SaleDeployed, 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
 	saleRepo := &mockQuerySaleRepo{sale: sale}
 	metaRepo := newMockSaleMetaRepo()
 	_ = metaRepo.Create(context.Background(), domain.ReconstructSaleMeta(1, 1, "标题", "", "", "", "", "", "public", 0, now, now))

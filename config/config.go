@@ -125,6 +125,10 @@ type LaunchpadConfig struct {
 	MouseTierAddress string `json:"mouse_tier_address" mapstructure:"mouse_tier_address"`
 	// MousePadByTierAddress MousePadByTier 合约地址。
 	MousePadByTierAddress string `json:"mouse_pad_by_tier_address" mapstructure:"mouse_pad_by_tier_address"`
+	// DeployerAddress Deployer 工厂合约地址，用于 createSale 操作的 to 地址。
+	DeployerAddress string `json:"deployer_address" mapstructure:"deployer_address"`
+	// AdminPrivateKey 管理员钱包私钥，仅开发环境用于签名广播交易。
+	AdminPrivateKey string `json:"admin_private_key" mapstructure:"admin_private_key"`
 	// PrepareExpiresIn Prepare 交易过期时间。
 	PrepareExpiresIn time.Duration `json:"prepare_expires_in" mapstructure:"prepare_expires_in"`
 	// PollInterval 兜底轮询间隔。
@@ -333,6 +337,7 @@ func bindEnvVars(v *viper.Viper) {
 		"log.level", "log.format", "log.add_source",
 		"launchpad.rpc_url", "launchpad.chain_id", "launchpad.mouse_pad_by_tier_abi",
 		"launchpad.mouse_tier_abi", "launchpad.mouse_tier_address", "launchpad.mouse_pad_by_tier_address",
+		"launchpad.deployer_address", "launchpad.admin_private_key",
 		"launchpad.prepare_expires_in", "launchpad.poll_interval", "launchpad.rpc_timeout",
 		"quote.cache_ttl",
 	}

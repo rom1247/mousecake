@@ -19,6 +19,7 @@ import (
 type salePO struct {
 	ID                   int64      `gorm:"column:id;primaryKey"`
 	ContractAddress      string     `gorm:"column:contract_address"`
+	Status               string     `gorm:"column:status"`
 	ChainID              int        `gorm:"column:chain_id"`
 	DeployerAddress      string     `gorm:"column:deployer_address"`
 	OwnerAddress         string     `gorm:"column:owner_address"`
@@ -199,6 +200,8 @@ type prepareTxPO struct {
 	PoolIndex     *int64     `gorm:"column:pool_index"`
 	OperationType string     `gorm:"column:operation_type"`
 	CallerAddress string     `gorm:"column:caller_address"`
+	TargetAddress string     `gorm:"column:target_address"`
+	Value         string     `gorm:"column:value"`
 	Calldata      string     `gorm:"column:calldata"`
 	CalldataHash  string     `gorm:"column:calldata_hash"`
 	Status        string     `gorm:"column:status"`
@@ -262,7 +265,7 @@ func NewSaleRepository(db *gorm.DB) *SaleRepository {
 func (r *SaleRepository) FindByID(ctx context.Context, saleID int64) (*domain.Sale, error) {
 	var po salePO
 	err := r.db.WithContext(ctx).
-		Select("id, contract_address, chain_id, deployer_address, owner_address, raise_token_address, offering_token_address, mouse_tier_address, start_block, end_block, vesting_start_time, vesting_revoked, max_buffer_blocks, created_at, updated_at, deleted_at").
+		Select("id, contract_address, status, chain_id, deployer_address, owner_address, raise_token_address, offering_token_address, mouse_tier_address, start_block, end_block, vesting_start_time, vesting_revoked, max_buffer_blocks, created_at, updated_at, deleted_at").
 		Where("id = ? AND deleted_at IS NULL", saleID).
 		First(&po).Error
 	if err != nil {
@@ -278,7 +281,7 @@ func (r *SaleRepository) FindByID(ctx context.Context, saleID int64) (*domain.Sa
 func (r *SaleRepository) FindByContractAddress(ctx context.Context, address string) (*domain.Sale, error) {
 	var po salePO
 	err := r.db.WithContext(ctx).
-		Select("id, contract_address, chain_id, deployer_address, owner_address, raise_token_address, offering_token_address, mouse_tier_address, start_block, end_block, vesting_start_time, vesting_revoked, max_buffer_blocks, created_at, updated_at, deleted_at").
+		Select("id, contract_address, status, chain_id, deployer_address, owner_address, raise_token_address, offering_token_address, mouse_tier_address, start_block, end_block, vesting_start_time, vesting_revoked, max_buffer_blocks, created_at, updated_at, deleted_at").
 		Where("contract_address = ? AND deleted_at IS NULL", strings.ToLower(address)).
 		First(&po).Error
 	if err != nil {
@@ -946,6 +949,21 @@ func (r *PrepareTxRepository) FindBroadcastTimeout(ctx context.Context, timeout 
 	return result, nil
 }
 
+// FindByTxHash 根据 tx_hash 查询 Prepare 交易。
+func (r *PrepareTxRepository) FindByTxHash(ctx context.Context, txHash string) (*domain.PrepareTx, error) {
+	var po prepareTxPO
+	err := r.db.WithContext(ctx).
+		Where("tx_hash = ?", txHash).
+		First(&po).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, fmt.Errorf("find prepare_tx by tx_hash %s: %w", txHash, err)
+	}
+	return prepareTxPOToEntity(&po), nil
+}
+
 // Create 创建 Prepare 交易。
 // 活跃状态的 calldata_hash 存在唯一约束，并发创建时若冲突则查询并返回已有记录。
 func (r *PrepareTxRepository) Create(ctx context.Context, tx *domain.PrepareTx) error {
@@ -987,7 +1005,7 @@ func (r *PrepareTxRepository) UpdateStatus(ctx context.Context, id int64, status
 
 func salePOToEntity(po *salePO) *domain.Sale {
 	return domain.ReconstructSale(
-		po.ID, po.ContractAddress, po.ChainID,
+		po.ID, po.ContractAddress, domain.SaleStatus(po.Status), po.ChainID,
 		po.DeployerAddress, po.OwnerAddress,
 		po.RaiseTokenAddress, po.OfferingTokenAddress,
 		po.MouseTierAddress, po.StartBlock, po.EndBlock,
@@ -998,7 +1016,7 @@ func salePOToEntity(po *salePO) *domain.Sale {
 
 func saleEntityToPO(s *domain.Sale) *salePO {
 	return &salePO{
-		ID: s.ID, ContractAddress: s.ContractAddress, ChainID: s.ChainID,
+		ID: s.ID, ContractAddress: s.ContractAddress, Status: string(s.Status), ChainID: s.ChainID,
 		DeployerAddress: s.DeployerAddress, OwnerAddress: s.OwnerAddress,
 		RaiseTokenAddress: s.RaiseTokenAddress, OfferingTokenAddress: s.OfferingTokenAddress,
 		MouseTierAddress: s.MouseTierAddress, StartBlock: s.StartBlock, EndBlock: s.EndBlock,
@@ -1110,7 +1128,7 @@ func prepareTxPOToEntity(po *prepareTxPO) *domain.PrepareTx {
 	return domain.ReconstructPrepareTx(
 		po.ID, po.SaleID, po.PoolIndex,
 		domain.PrepareTxOperationType(po.OperationType),
-		po.CallerAddress, po.Calldata, po.CalldataHash,
+		po.CallerAddress, po.TargetAddress, po.Value, po.Calldata, po.CalldataHash,
 		domain.PrepareTxStatus(po.Status), po.TxHash, po.BlockNumber,
 		po.ErrorMessage, po.ExpiresAt, po.ConfirmedAt,
 		po.CreatedAt, po.UpdatedAt,
@@ -1121,9 +1139,127 @@ func prepareTxEntityToPO(tx *domain.PrepareTx) *prepareTxPO {
 	return &prepareTxPO{
 		ID: tx.ID, SaleID: tx.SaleID, PoolIndex: tx.PoolIndex,
 		OperationType: string(tx.OperationType), CallerAddress: tx.CallerAddress,
+		TargetAddress: tx.TargetAddress, Value: tx.Value,
 		Calldata: tx.Calldata, CalldataHash: tx.CalldataHash,
 		Status: string(tx.Status), TxHash: tx.TxHash, BlockNumber: tx.BlockNumber,
 		ErrorMessage: tx.ErrorMessage, ExpiresAt: tx.ExpiresAt,
 		ConfirmedAt: tx.ConfirmedAt, CreatedAt: tx.CreatedAt, UpdatedAt: tx.UpdatedAt,
 	}
+}
+
+// --- 链上状态刷新用 Update 方法 ---
+
+// ChainRefreshRepository 提供链上状态刷新所需的数据访问方法。
+type ChainRefreshRepository struct {
+	db *gorm.DB
+}
+
+// NewChainRefreshRepository 创建 ChainRefreshRepository 实例。
+func NewChainRefreshRepository(db *gorm.DB) *ChainRefreshRepository {
+	return &ChainRefreshRepository{db: db}
+}
+
+// UpdateSaleConfig 使用 fields map 覆盖更新 launchpad_sales 表指定 saleID 的字段。
+func (r *ChainRefreshRepository) UpdateSaleConfig(ctx context.Context, saleID int64, fields map[string]any) error {
+	err := r.db.WithContext(ctx).
+		Model(&salePO{}).
+		Where("id = ?", saleID).
+		Updates(fields).Error
+	if err != nil {
+		return fmt.Errorf("更新 sale 配置 id=%d: %w", saleID, err)
+	}
+	return nil
+}
+
+// UpdatePoolConfig 使用 fields map 覆盖更新 launchpad_pools 表指定 saleID + poolIndex 的记录。
+func (r *ChainRefreshRepository) UpdatePoolConfig(ctx context.Context, saleID int64, poolIndex int, fields map[string]any) error {
+	var po poolPO
+	err := r.db.WithContext(ctx).
+		Where("sale_id = ? AND pool_index = ?", saleID, poolIndex).
+		Assign(fields).
+		FirstOrCreate(&po).Error
+	if err != nil {
+		return fmt.Errorf("更新 pool 配置 sale_id=%d pool_index=%d: %w", saleID, poolIndex, err)
+	}
+	return nil
+}
+
+// UpdateTierParams 使用 fields map 覆盖更新 launchpad_tier_params 表指定 chainID 的记录。
+func (r *ChainRefreshRepository) UpdateTierParams(ctx context.Context, chainID int, fields map[string]any) error {
+	var po tierParamPO
+	err := r.db.WithContext(ctx).
+		Where("chain_id = ?", chainID).
+		Assign(fields).
+		FirstOrCreate(&po).Error
+	if err != nil {
+		return fmt.Errorf("更新 tier 参数 chain_id=%d: %w", chainID, err)
+	}
+	return nil
+}
+
+// UpdateTierLimits 批量 upsert launchpad_tier_limits 表，按 tier 级别更新额度。
+func (r *ChainRefreshRepository) UpdateTierLimits(ctx context.Context, saleID int64, limits map[int]string) error {
+	for tier, limit := range limits {
+		var po tierLimitPO
+		err := r.db.WithContext(ctx).
+			Where("sale_id = ? AND tier = ?", saleID, tier).
+			Assign(map[string]any{"credit_limit": limit}).
+			FirstOrCreate(&po).Error
+		if err != nil {
+			return fmt.Errorf("更新 tier limit sale_id=%d tier=%d: %w", saleID, tier, err)
+		}
+	}
+	return nil
+}
+
+// UpdateUserPoolState 使用 fields map 覆盖更新 launchpad_user_pool_state 表。
+func (r *ChainRefreshRepository) UpdateUserPoolState(ctx context.Context, saleID int64, poolIndex int, userAddress string, fields map[string]any) error {
+	var po userPoolStatePO
+	err := r.db.WithContext(ctx).
+		Where("sale_id = ? AND pool_index = ? AND user_address = ?", saleID, poolIndex, userAddress).
+		Assign(fields).
+		FirstOrCreate(&po).Error
+	if err != nil {
+		return fmt.Errorf("更新用户 pool 状态 sale_id=%d pool=%d user=%s: %w", saleID, poolIndex, userAddress, err)
+	}
+	return nil
+}
+
+// ListUserAddressesByPool 查询指定 Pool 下所有 distinct user_address。
+func (r *ChainRefreshRepository) ListUserAddressesByPool(ctx context.Context, saleID int64, poolIndex int) ([]string, error) {
+	var addresses []string
+	err := r.db.WithContext(ctx).
+		Model(&userPoolStatePO{}).
+		Distinct("user_address").
+		Where("sale_id = ? AND pool_index = ?", saleID, poolIndex).
+		Pluck("user_address", &addresses).Error
+	if err != nil {
+		return nil, fmt.Errorf("查询用户地址列表 sale_id=%d pool=%d: %w", saleID, poolIndex, err)
+	}
+	return addresses, nil
+}
+
+// UpdateVestingSchedule 使用 fields map 覆盖更新 launchpad_vesting_schedules 表指定 scheduleID 的记录。
+func (r *ChainRefreshRepository) UpdateVestingSchedule(ctx context.Context, scheduleID int64, fields map[string]any) error {
+	err := r.db.WithContext(ctx).
+		Model(&vestingSchedulePO{}).
+		Where("schedule_id = ?", scheduleID).
+		Updates(fields).Error
+	if err != nil {
+		return fmt.Errorf("更新 vesting schedule schedule_id=%d: %w", scheduleID, err)
+	}
+	return nil
+}
+
+// ListVestingScheduleIDsByUser 查询指定用户的所有 vesting schedule ID。
+func (r *ChainRefreshRepository) ListVestingScheduleIDsByUser(ctx context.Context, beneficiary string) ([]int64, error) {
+	var ids []int64
+	err := r.db.WithContext(ctx).
+		Model(&vestingSchedulePO{}).
+		Where("beneficiary = ?", beneficiary).
+		Pluck("schedule_id", &ids).Error
+	if err != nil {
+		return nil, fmt.Errorf("查询用户 vesting schedule ids beneficiary=%s: %w", beneficiary, err)
+	}
+	return ids, nil
 }

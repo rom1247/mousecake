@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"errors"
+	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -8,7 +10,7 @@ import (
 
 func TestSale_Phase(t *testing.T) {
 	now := time.Now()
-	sale := ReconstructSale(1, "0xsale", 1, "0xdep", "0xowner", "0xraise", "0xoffer", "0xtier", 100, 200, 0, false, 1000, now, now, nil)
+	sale := ReconstructSale(1, "0xsale", SaleDeployed, 1, "0xdep", "0xowner", "0xraise", "0xoffer", "0xtier", 100, 200, 0, false, 1000, now, now, nil)
 
 	tests := []struct {
 		name          string
@@ -166,5 +168,38 @@ func TestPrepareTx_IsExpired(t *testing.T) {
 	tx.ExpiresAt = time.Now().Add(1 * time.Hour)
 	if tx.IsExpired() {
 		t.Error("未过期的 PrepareTx 应返回 false")
+	}
+}
+
+func TestErrSaleNotDeployed_可通过ErrorsIs判断(t *testing.T) {
+	err := ErrSaleNotDeployed
+	if !errors.Is(err, ErrSaleNotDeployed) {
+		t.Error("errors.Is(ErrSaleNotDeployed, ErrSaleNotDeployed) 应返回 true")
+	}
+
+	// 包装后仍然能通过 errors.Is 判断
+	wrapped := fmt.Errorf("业务校验: %w", err)
+	if !errors.Is(wrapped, ErrSaleNotDeployed) {
+		t.Error("包装后的错误仍应通过 errors.Is 匹配 ErrSaleNotDeployed")
+	}
+}
+
+func TestReconstructSale_支持Status参数(t *testing.T) {
+	now := time.Now()
+	sale := ReconstructSale(
+		1, "0xsale", SaleDeploying, 1,
+		"0xdep", "0xowner", "0xraise", "0xoffer", "0xtier",
+		100, 200, 0, false, 1000,
+		now, now, nil,
+	)
+
+	if sale.Status != SaleDeploying {
+		t.Errorf("Status = %s, want %s", sale.Status, SaleDeploying)
+	}
+	if sale.ID != 1 {
+		t.Errorf("ID = %d, want 1", sale.ID)
+	}
+	if sale.ContractAddress != "0xsale" {
+		t.Errorf("ContractAddress = %s, want 0xsale", sale.ContractAddress)
 	}
 }

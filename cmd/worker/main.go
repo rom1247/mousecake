@@ -69,7 +69,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	eventSvc := launchpad.NewEventService(db)
+	prepareTxRepo := launchpad.NewPrepareTxRepository(db)
+	eventSvc := launchpad.NewEventService(db, prepareTxRepo)
 
 	syncMgr, err := sync.NewSyncManager(cfg.Sync, db, eventSvc)
 	if err != nil {

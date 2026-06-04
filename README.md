@@ -157,6 +157,14 @@ go vet ./...
 go test -race ./...
 ```
 
+### 生成 Swagger 文档
+
+```bash
+swag init -g cmd/server/main.go -o docs --parseDependency --parseInternal
+```
+
+生成的文档输出到 `docs/` 目录（`docs.go`、`swagger.json`、`swagger.yaml`）。开发模式下访问 `http://localhost:8080/swagger/index.html` 查看 Swagger UI。
+
 ### Lint
 
 ```bash

@@ -48,6 +48,26 @@ func (m *mockSubscriberNodePool) HeaderByNumber(_ context.Context, _ *big.Int) (
 	return nil, nil
 }
 
+func (m *mockSubscriberNodePool) BatchCallContract(_ context.Context, _ []ethereum.CallMsg) ([][]byte, error) {
+	return nil, nil
+}
+
+func (m *mockSubscriberNodePool) PendingNonceAt(_ context.Context, _ common.Address) (uint64, error) {
+	return 0, nil
+}
+
+func (m *mockSubscriberNodePool) EstimateGas(_ context.Context, _ ethereum.CallMsg) (uint64, error) {
+	return 0, nil
+}
+
+func (m *mockSubscriberNodePool) SendTransaction(_ context.Context, _ *types.Transaction) error {
+	return nil
+}
+
+func (m *mockSubscriberNodePool) SuggestGasPrice(_ context.Context) (*big.Int, error) {
+	return big.NewInt(0), nil
+}
+
 func (m *mockSubscriberNodePool) Close() {}
 
 // 确保 mockSubscriberNodePool 满足 NodePool 接口。

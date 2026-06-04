@@ -273,6 +273,31 @@ func (m *mockNodePool) SubscribeLogs(_ context.Context, _ ethereum.FilterQuery) 
 	return nil, nil, nil
 }
 
+// BatchCallContract 实现 NodePool 接口。
+func (m *mockNodePool) BatchCallContract(_ context.Context, _ []ethereum.CallMsg) ([][]byte, error) {
+	return nil, nil
+}
+
+// PendingNonceAt 实现 NodePool 接口，返回零值。
+func (m *mockNodePool) PendingNonceAt(_ context.Context, _ common.Address) (uint64, error) {
+	return 0, nil
+}
+
+// EstimateGas 实现 NodePool 接口，返回零值。
+func (m *mockNodePool) EstimateGas(_ context.Context, _ ethereum.CallMsg) (uint64, error) {
+	return 0, nil
+}
+
+// SendTransaction 实现 NodePool 接口，返回 nil。
+func (m *mockNodePool) SendTransaction(_ context.Context, _ *types.Transaction) error {
+	return nil
+}
+
+// SuggestGasPrice 实现 NodePool 接口，返回零值。
+func (m *mockNodePool) SuggestGasPrice(_ context.Context) (*big.Int, error) {
+	return big.NewInt(0), nil
+}
+
 // Close 实现 NodePool 接口，不做任何操作。
 func (m *mockNodePool) Close() {}
 

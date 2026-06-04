@@ -61,6 +61,26 @@ func (m *mockNodePool) SubscribeLogs(_ context.Context, _ ethereum.FilterQuery) 
 	return nil, nil, nil
 }
 
+func (m *mockNodePool) BatchCallContract(_ context.Context, _ []ethereum.CallMsg) ([][]byte, error) {
+	return nil, nil
+}
+
+func (m *mockNodePool) PendingNonceAt(_ context.Context, _ common.Address) (uint64, error) {
+	return 0, nil
+}
+
+func (m *mockNodePool) EstimateGas(_ context.Context, _ ethereum.CallMsg) (uint64, error) {
+	return 0, nil
+}
+
+func (m *mockNodePool) SendTransaction(_ context.Context, _ *types.Transaction) error {
+	return nil
+}
+
+func (m *mockNodePool) SuggestGasPrice(_ context.Context) (*big.Int, error) {
+	return big.NewInt(0), nil
+}
+
 func (m *mockNodePool) Close() {}
 
 // TestChainReader_GetTransactionReceipt 测试 receipt 查询场景。

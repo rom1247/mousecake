@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"math/big"
 	"net/http"
 	"os"
 	"os/signal"
@@ -167,7 +168,7 @@ func main() {
 	prepareSvc := launchpad.NewPrepareService(prepareRepo, chainReader, encoder, prepareExpiresIn)
 
 	// 创建其他 Service
-	adminSvc := launchpad.NewAdminService(prepareSvc, encoder, "MousePadByTierDeployer", "MousePadByTier")
+	adminSvc := launchpad.NewAdminService(prepareSvc, encoder, "MousePadByTierDeployer", "MousePadByTier", saleRepo, cfg.Launchpad.DeployerAddress)
 	querySvc := launchpad.NewUserQueryService(
 		saleRepo, poolRepo, saleMetaRepo, tierLimitRepo, whitelistRepo,
 		depositRepo, userPoolRepo, creditRepo, harvestRepo, vestingRepo, releaseRepo,
@@ -177,13 +178,31 @@ func main() {
 		prepareSvc, querySvc, encoder,
 		launchpadChain.Contracts.MousePadByTier,
 		chainReader, saleRepo, poolRepo, tierLimitRepo, whitelistRepo,
-		userPoolRepo, creditRepo,
+		userPoolRepo, creditRepo, vestingRepo,
 	)
 	metaSvc := launchpad.NewSaleMetaService(saleMetaRepo, saleRepo)
 	tokenSvc := launchpad.NewTokenService(tokenRepo)
 
+	// 创建 ChainRefreshService
+	chainRefreshRepo := launchpad.NewChainRefreshRepository(db)
+	chainRefreshSvc := launchpad.NewChainRefreshService(chainReader, chainRefreshRepo, saleRepo)
+
+	// 创建 DevExecuteService（仅非 release 模式且有私钥时）
+	var devExecuteSvc launchpad.DevExecutor
+	if gin.Mode() != gin.ReleaseMode && cfg.Launchpad.AdminPrivateKey != "" {
+		signerChainID := big.NewInt(int64(launchpadChain.ChainID))
+		signer, err := chain.NewSigner(cfg.Launchpad.AdminPrivateKey, nodePool, signerChainID)
+		if err != nil {
+			slog.Error("创建 Signer 失败", "error", err)
+			os.Exit(1)
+		}
+		slog.Info("Signer 初始化完成", "address", signer.Address().Hex())
+
+		devExecuteSvc = launchpad.NewDevExecuteService(prepareRepo, signer)
+	}
+
 	// 创建 Handler 并注册路由
-	launchpadHandler := launchpad.NewHandler(adminSvc, userSvc, prepareSvc, querySvc, metaSvc, tokenSvc)
+	launchpadHandler := launchpad.NewHandler(adminSvc, userSvc, prepareSvc, querySvc, metaSvc, tokenSvc, chainRefreshSvc, devExecuteSvc)
 	launchpadHandler.RegisterRoutes(r.Group("/api/v1/launchpad"))
 
 	// 注册兜底轮询定时任务

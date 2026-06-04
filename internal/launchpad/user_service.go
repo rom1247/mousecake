@@ -21,6 +21,8 @@ type UserService struct {
 	whitelistRepo domain.WhitelistRepository
 	userPoolRepo  domain.UserPoolStateRepository
 	creditRepo    domain.UserCreditRepository
+	// findVestingScheduleByID 根据 ID 查询 VestingSchedule，Release 操作使用。
+	findVestingScheduleByID func(ctx context.Context, id int64) (*domain.VestingSchedule, error)
 }
 
 // NewUserService 创建 UserService。
@@ -36,19 +38,21 @@ func NewUserService(
 	whitelistRepo domain.WhitelistRepository,
 	userPoolRepo domain.UserPoolStateRepository,
 	creditRepo domain.UserCreditRepository,
+	vestingScheduleRepo *VestingScheduleRepository,
 ) *UserService {
 	return &UserService{
-		prepareSvc:    prepareSvc,
-		querySvc:      querySvc,
-		encoder:       encoder,
-		contract:      contract,
-		chain:         chain,
-		saleRepo:      saleRepo,
-		poolRepo:      poolRepo,
-		tierLimitRepo: tierLimitRepo,
-		whitelistRepo: whitelistRepo,
-		userPoolRepo:  userPoolRepo,
-		creditRepo:    creditRepo,
+		prepareSvc:              prepareSvc,
+		querySvc:                querySvc,
+		encoder:                 encoder,
+		contract:                contract,
+		chain:                   chain,
+		saleRepo:                saleRepo,
+		poolRepo:                poolRepo,
+		tierLimitRepo:           tierLimitRepo,
+		whitelistRepo:           whitelistRepo,
+		userPoolRepo:            userPoolRepo,
+		creditRepo:              creditRepo,
+		findVestingScheduleByID: vestingScheduleRepo.FindByID,
 	}
 }
 
@@ -62,9 +66,12 @@ type DepositInput struct {
 
 // Deposit 用户申购：校验资格 + 生成 calldata + 创建 Prepare 交易。
 func (s *UserService) Deposit(ctx context.Context, input DepositInput) (*domain.PrepareTx, error) {
-	_, err := s.saleRepo.FindByID(ctx, input.SaleID)
+	sale, err := s.saleRepo.FindByID(ctx, input.SaleID)
 	if err != nil {
 		return nil, fmt.Errorf("查询 sale %d: %w", input.SaleID, err)
+	}
+	if sale.Status != domain.SaleDeployed {
+		return nil, fmt.Errorf("sale %d 尚未部署: %w", input.SaleID, domain.ErrSaleNotDeployed)
 	}
 
 	pool, err := s.poolRepo.FindBySaleAndPool(ctx, input.SaleID, int(input.PoolIndex))
@@ -119,6 +126,8 @@ func (s *UserService) Deposit(ctx context.Context, input DepositInput) (*domain.
 		SaleID:        &saleID,
 		PoolIndex:     &poolIdx,
 		Calldata:      calldata,
+		TargetAddress: sale.ContractAddress,
+		Value:         "0",
 	})
 }
 
@@ -131,9 +140,12 @@ type HarvestInput struct {
 
 // Harvest 用户结算：生成 harvest calldata + 创建 Prepare 交易。
 func (s *UserService) Harvest(ctx context.Context, input HarvestInput) (*domain.PrepareTx, error) {
-	_, err := s.saleRepo.FindByID(ctx, input.SaleID)
+	sale, err := s.saleRepo.FindByID(ctx, input.SaleID)
 	if err != nil {
 		return nil, fmt.Errorf("查询 sale %d: %w", input.SaleID, err)
+	}
+	if sale.Status != domain.SaleDeployed {
+		return nil, fmt.Errorf("sale %d 尚未部署: %w", input.SaleID, domain.ErrSaleNotDeployed)
 	}
 
 	calldata, err := s.encoder.EncodeCall(s.contract, "harvest",
@@ -151,6 +163,8 @@ func (s *UserService) Harvest(ctx context.Context, input HarvestInput) (*domain.
 		SaleID:        &saleID,
 		PoolIndex:     &poolIdx,
 		Calldata:      calldata,
+		TargetAddress: sale.ContractAddress,
+		Value:         "0",
 	})
 }
 
@@ -162,6 +176,20 @@ type ReleaseInput struct {
 
 // Release 用户释放 vesting：生成 release calldata + 创建 Prepare 交易。
 func (s *UserService) Release(ctx context.Context, input ReleaseInput) (*domain.PrepareTx, error) {
+	// 通过 ScheduleID 反查 vesting_schedule 获取 sale_id，再查 sale 表
+	schedule, err := s.findVestingScheduleByID(ctx, input.ScheduleID)
+	if err != nil {
+		return nil, fmt.Errorf("查询 vesting schedule %d: %w", input.ScheduleID, err)
+	}
+
+	sale, err := s.saleRepo.FindByID(ctx, schedule.SaleID)
+	if err != nil {
+		return nil, fmt.Errorf("查询 sale %d: %w", schedule.SaleID, err)
+	}
+	if sale.Status != domain.SaleDeployed {
+		return nil, fmt.Errorf("sale %d 尚未部署: %w", schedule.SaleID, domain.ErrSaleNotDeployed)
+	}
+
 	calldata, err := s.encoder.EncodeCall(s.contract, "release",
 		big.NewInt(input.ScheduleID),
 	)
@@ -169,9 +197,13 @@ func (s *UserService) Release(ctx context.Context, input ReleaseInput) (*domain.
 		return nil, fmt.Errorf("编码 release: %w", err)
 	}
 
+	saleID := schedule.SaleID
 	return s.prepareSvc.Create(ctx, CreatePrepareInput{
 		OperationType: string(domain.OpRelease),
 		CallerAddress: input.CallerAddress,
+		SaleID:        &saleID,
 		Calldata:      calldata,
+		TargetAddress: sale.ContractAddress,
+		Value:         "0",
 	})
 }

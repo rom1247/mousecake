@@ -7,18 +7,20 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/mousecake-go/mousecake-go/internal/launchpad/domain"
 	"github.com/mousecake-go/mousecake-go/internal/shared/sync"
 	"gorm.io/gorm"
 )
 
 // EventService 处理 Launchpad 相关的链上事件投影。
 type EventService struct {
-	db *gorm.DB
+	db            *gorm.DB
+	prepareTxRepo *PrepareTxRepository
 }
 
 // NewEventService 创建 EventService 实例。
-func NewEventService(db *gorm.DB) *EventService {
-	return &EventService{db: db}
+func NewEventService(db *gorm.DB, prepareTxRepo *PrepareTxRepository) *EventService {
+	return &EventService{db: db, prepareTxRepo: prepareTxRepo}
 }
 
 // HandleEvent 根据事件名称路由到对应的处理方法。
@@ -54,16 +56,34 @@ func (s *EventService) HandleEvent(ctx context.Context, event *sync.ChainEvent) 
 	}
 }
 
-// OnSaleCreated 处理 SaleCreated 事件，写入 launchpad_sales。
+// OnSaleCreated 处理 SaleCreated 事件。
+// 优先通过 event.TxHash 查找 PrepareTx 回填 draft sale 的 contract_address 和 status=deployed。
+// 如果找不到 PrepareTx 或 sale_id 为 nil，回退到 FirstOrCreate 创建新记录。
 func (s *EventService) OnSaleCreated(ctx context.Context, event *sync.ChainEvent) error {
 	var data map[string]any
 	if err := json.Unmarshal([]byte(event.EventData), &data); err != nil {
 		return fmt.Errorf("解析 SaleCreated 事件数据: %w", err)
 	}
 
-	return s.db.WithContext(ctx).Where("contract_address = ?", event.ContractAddress).
+	saleAddress := dataStr(data, "sale_address", event.ContractAddress)
+
+	// 尝试通过 TxHash 查找 PrepareTx 回填 draft sale
+	if s.prepareTxRepo != nil && event.TxHash != "" {
+		ptx, err := s.prepareTxRepo.FindByTxHash(ctx, event.TxHash)
+		if err != nil && !errors.Is(err, domain.ErrNotFound) {
+			return fmt.Errorf("查找 prepare_tx by tx_hash %s: %w", event.TxHash, err)
+		}
+
+		if ptx != nil && ptx.SaleID != nil {
+			return s.backfillDraftSale(ctx, *ptx.SaleID, saleAddress, data, event)
+		}
+		// PrepareTx 不存在或 sale_id 为 nil，回退到 FirstOrCreate
+	}
+
+	// 回退：原有 FirstOrCreate 逻辑
+	return s.db.WithContext(ctx).Where("contract_address = ?", saleAddress).
 		FirstOrCreate(&salePO{
-			ContractAddress:      dataStr(data, "sale_address", event.ContractAddress),
+			ContractAddress:      saleAddress,
 			ChainID:              event.ChainID,
 			DeployerAddress:      dataStr(data, "deployer", ""),
 			OwnerAddress:         dataStr(data, "creator", ""),
@@ -71,6 +91,63 @@ func (s *EventService) OnSaleCreated(ctx context.Context, event *sync.ChainEvent
 			OfferingTokenAddress: dataStr(data, "offering_token", ""),
 			MouseTierAddress:     dataStr(data, "mouse_tier", ""),
 		}).Error
+}
+
+// backfillDraftSale 回填 draft sale 的 contract_address 和 status。
+func (s *EventService) backfillDraftSale(ctx context.Context, saleID int64, saleAddress string, data map[string]any, event *sync.ChainEvent) error {
+	var sale salePO
+	if err := s.db.WithContext(ctx).Where("id = ?", saleID).First(&sale).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			slog.Warn("OnSaleCreated: sale 记录不存在，回退到 FirstOrCreate", "sale_id", saleID, "event_id", event.ID)
+			return s.db.WithContext(ctx).Where("contract_address = ?", saleAddress).
+				FirstOrCreate(&salePO{
+					ContractAddress:      saleAddress,
+					ChainID:              event.ChainID,
+					DeployerAddress:      dataStr(data, "deployer", ""),
+					OwnerAddress:         dataStr(data, "creator", ""),
+					RaiseTokenAddress:    dataStr(data, "raise_token", ""),
+					OfferingTokenAddress: dataStr(data, "offering_token", ""),
+					MouseTierAddress:     dataStr(data, "mouse_tier", ""),
+				}).Error
+		}
+		return fmt.Errorf("查找 sale id=%d: %w", saleID, err)
+	}
+
+	// 幂等处理：contract_address 已有值，静默跳过
+	if sale.ContractAddress != "" {
+		slog.Info("OnSaleCreated: sale 已有 contract_address，跳过", "sale_id", saleID, "contract_address", sale.ContractAddress)
+		return nil
+	}
+
+	// 回填 contract_address 和 status=deployed
+	updates := map[string]any{
+		"contract_address": saleAddress,
+		"status":           string(domain.SaleDeployed),
+		"chain_id":         event.ChainID,
+	}
+	// 补充事件中可能有的额外字段
+	if v := dataStr(data, "deployer", ""); v != "" {
+		updates["deployer_address"] = v
+	}
+	if v := dataStr(data, "creator", ""); v != "" {
+		updates["owner_address"] = v
+	}
+	if v := dataStr(data, "raise_token", ""); v != "" {
+		updates["raise_token_address"] = v
+	}
+	if v := dataStr(data, "offering_token", ""); v != "" {
+		updates["offering_token_address"] = v
+	}
+	if v := dataStr(data, "mouse_tier", ""); v != "" {
+		updates["mouse_tier_address"] = v
+	}
+
+	if err := s.db.WithContext(ctx).Model(&salePO{}).Where("id = ?", saleID).Updates(updates).Error; err != nil {
+		return fmt.Errorf("回填 sale id=%d: %w", saleID, err)
+	}
+
+	slog.Info("OnSaleCreated: 回填 sale 成功", "sale_id", saleID, "contract_address", saleAddress)
+	return nil
 }
 
 // OnPoolSet 处理 PoolSet 事件，写入 launchpad_pools。

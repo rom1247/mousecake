@@ -22,12 +22,24 @@ const (
 	SalePhaseEnded SalePhase = "ended"
 )
 
+// SaleStatus 表示销售合约的部署状态。
+type SaleStatus string
+
+const (
+	// SaleDeploying 链上部署中（ContractAddress 为空）。
+	SaleDeploying SaleStatus = "deploying"
+	// SaleDeployed 已部署（ContractAddress 已回填）。
+	SaleDeployed SaleStatus = "deployed"
+)
+
 // Sale 是 IDO 销售合约聚合根实体，表示一个 MousePadByTier 合约实例。
 type Sale struct {
 	// ID 数据库主键。
 	ID int64
 	// ContractAddress 链上销售合约地址。
 	ContractAddress string
+	// Status 销售合约部署状态（deploying/deployed）。
+	Status SaleStatus
 	// ChainID 所属链 ID。
 	ChainID int
 	// DeployerAddress 合约部署者地址。
@@ -70,10 +82,11 @@ func (s *Sale) Phase(currentBlock int64) SalePhase {
 }
 
 // ReconstructSale 从数据库重建 Sale 实体（跳过业务规则校验）。
-func ReconstructSale(id int64, contractAddress string, chainID int, deployerAddress, ownerAddress, raiseTokenAddress, offeringTokenAddress, mouseTierAddress string, startBlock, endBlock, vestingStartTime int64, vestingRevoked bool, maxBufferBlocks int64, createdAt, updatedAt time.Time, deletedAt *time.Time) *Sale {
+func ReconstructSale(id int64, contractAddress string, status SaleStatus, chainID int, deployerAddress, ownerAddress, raiseTokenAddress, offeringTokenAddress, mouseTierAddress string, startBlock, endBlock, vestingStartTime int64, vestingRevoked bool, maxBufferBlocks int64, createdAt, updatedAt time.Time, deletedAt *time.Time) *Sale {
 	return &Sale{
 		ID:                   id,
 		ContractAddress:      contractAddress,
+		Status:               status,
 		ChainID:              chainID,
 		DeployerAddress:      deployerAddress,
 		OwnerAddress:         ownerAddress,
@@ -574,6 +587,10 @@ type PrepareTx struct {
 	OperationType PrepareTxOperationType
 	// CallerAddress 发起调用的用户或管理员地址。
 	CallerAddress string
+	// TargetAddress 目标合约地址（to），签名广播时使用。
+	TargetAddress string
+	// Value 原生代币数量（wei），签名广播时使用。
+	Value string
 	// Calldata 编码后的合约调用数据（hex）。
 	Calldata string
 	// CalldataHash 调用数据的哈希，用于前端验证数据完整性。
@@ -612,10 +629,11 @@ func (tx *PrepareTx) Transition(target PrepareTxStatus) error {
 }
 
 // ReconstructPrepareTx 从数据库重建 PrepareTx。
-func ReconstructPrepareTx(id int64, saleID, poolIndex *int64, operationType PrepareTxOperationType, callerAddress, calldata, calldataHash string, status PrepareTxStatus, txHash *string, blockNumber *int64, errorMessage *string, expiresAt time.Time, confirmedAt *time.Time, createdAt, updatedAt time.Time) *PrepareTx {
+func ReconstructPrepareTx(id int64, saleID, poolIndex *int64, operationType PrepareTxOperationType, callerAddress, targetAddress, value, calldata, calldataHash string, status PrepareTxStatus, txHash *string, blockNumber *int64, errorMessage *string, expiresAt time.Time, confirmedAt *time.Time, createdAt, updatedAt time.Time) *PrepareTx {
 	return &PrepareTx{
 		ID: id, SaleID: saleID, PoolIndex: poolIndex,
 		OperationType: operationType, CallerAddress: callerAddress,
+		TargetAddress: targetAddress, Value: value,
 		Calldata: calldata, CalldataHash: calldataHash,
 		Status: status, TxHash: txHash, BlockNumber: blockNumber,
 		ErrorMessage: errorMessage, ExpiresAt: expiresAt,
@@ -625,6 +643,8 @@ func ReconstructPrepareTx(id int64, saleID, poolIndex *int64, operationType Prep
 
 // 领域哨兵错误
 var (
+	// ErrSaleNotDeployed Sale 尚未在链上部署完成。
+	ErrSaleNotDeployed = errors.New("launchpad: Sale 尚未部署")
 	// ErrInvalidTransition 非法的 PrepareTx 状态转换。
 	ErrInvalidTransition = errors.New("launchpad: 非法状态转换")
 	// ErrNotFound 记录未找到。

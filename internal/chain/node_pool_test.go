@@ -5,12 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"math/big"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/sony/gobreaker"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -379,6 +383,27 @@ func TestNode_RateLimited(t *testing.T) {
 
 // --- 辅助函数 ---
 
+// newDummySignedTx 创建一个用于测试的签名交易。
+func newDummySignedTx(t *testing.T) *types.Transaction {
+	t.Helper()
+	privateKey, err := crypto.GenerateKey()
+	require.NoError(t, err)
+	to := common.HexToAddress("0xABC")
+	tx := types.NewTx(&types.LegacyTx{
+		Nonce:    1,
+		To:       &to,
+		Value:    nil,
+		Gas:      21000,
+		GasPrice: big.NewInt(1),
+		Data:     nil,
+	})
+	chainID := big.NewInt(1)
+	signer := types.NewEIP155Signer(chainID)
+	signedTx, err := types.SignTx(tx, signer, privateKey)
+	require.NoError(t, err)
+	return signedTx
+}
+
 // newFakeRPCServer 创建返回固定 JSON 响应的测试 HTTP 服务器。
 func newFakeRPCServer(t *testing.T, response string) *httptest.Server {
 	t.Helper()
@@ -437,3 +462,182 @@ func newMockSubscription(err error) *mockSubscription {
 
 func (m *mockSubscription) Err() <-chan error { return m.errCh }
 func (m *mockSubscription) Unsubscribe()      {}
+
+// --- Section 4: NodePool 写操作测试 ---
+
+// TestNodePool_PendingNonceAt_成功路径 测试 PendingNonceAt 成功获取 nonce。
+func TestNodePool_PendingNonceAt_成功路径(t *testing.T) {
+	// GIVEN: NodePool 有可用节点
+	// AND: 地址在链上已有 5 笔 pending 交易
+	s := newMethodRoutingRPCServer(t, map[string]string{
+		"eth_getTransactionCount": `{"jsonrpc":"2.0","id":1,"result":"0x5"}`,
+	})
+	defer s.Close()
+
+	np, err := NewNodePool([]config.ChainNodeConfig{
+		{Name: "node1", HTTPURL: s.URL, Timeout: 5 * time.Second},
+	}, 1)
+	require.NoError(t, err)
+	defer np.Close()
+
+	// WHEN: 调用 PendingNonceAt(ctx, 0xAdmin)
+	nonce, err := np.PendingNonceAt(context.Background(), common.HexToAddress("0xAdmin"))
+
+	// THEN: 返回 uint64(5)
+	require.NoError(t, err)
+	assert.Equal(t, uint64(5), nonce)
+}
+
+// TestNodePool_PendingNonceAt_所有节点不可用 测试所有节点不可用时返回错误。
+func TestNodePool_PendingNonceAt_所有节点不可用(t *testing.T) {
+	// GIVEN: NodePool 中所有节点均返回错误
+	s := newFakeRPCServer(t, `{"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"internal error"}}`)
+	defer s.Close()
+
+	np, err := NewNodePool([]config.ChainNodeConfig{
+		{Name: "node1", HTTPURL: s.URL, Timeout: 5 * time.Second},
+	}, 1)
+	require.NoError(t, err)
+	defer np.Close()
+
+	// WHEN: 调用 PendingNonceAt
+	_, err = np.PendingNonceAt(context.Background(), common.HexToAddress("0xAdmin"))
+
+	// THEN: 返回 ErrAllNodesUnavailable 错误
+	assert.ErrorIs(t, err, ErrAllNodesUnavailable)
+}
+
+// TestNodePool_EstimateGas_成功路径 测试 EstimateGas 成功估算 gas。
+func TestNodePool_EstimateGas_成功路径(t *testing.T) {
+	// GIVEN: NodePool 有可用节点
+	// AND: 交易参数合法
+	s := newMethodRoutingRPCServer(t, map[string]string{
+		"eth_estimateGas": `{"jsonrpc":"2.0","id":1,"result":"0x249f0"}`,
+	})
+	defer s.Close()
+
+	np, err := NewNodePool([]config.ChainNodeConfig{
+		{Name: "node1", HTTPURL: s.URL, Timeout: 5 * time.Second},
+	}, 1)
+	require.NoError(t, err)
+	defer np.Close()
+
+	to := common.HexToAddress("0xContract")
+
+	// WHEN: 调用 EstimateGas(ctx, msg)
+	gas, err := np.EstimateGas(context.Background(), ethereum.CallMsg{
+		From: common.HexToAddress("0xAdmin"),
+		To:   &to,
+		Data: common.Hex2Bytes("abc123"),
+	})
+
+	// THEN: 返回 uint64 gas 用量（150000 = 0x249f0）
+	require.NoError(t, err)
+	assert.Equal(t, uint64(150000), gas)
+}
+
+// TestNodePool_EstimateGas_参数不合法 测试交易参数不合法时返回错误。
+func TestNodePool_EstimateGas_参数不合法(t *testing.T) {
+	// GIVEN: NodePool 有可用节点
+	// AND: 交易 to 地址为无效合约
+	s := newMethodRoutingRPCServer(t, map[string]string{
+		"eth_estimateGas": `{"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"execution reverted"}}`,
+	})
+	defer s.Close()
+
+	np, err := NewNodePool([]config.ChainNodeConfig{
+		{Name: "node1", HTTPURL: s.URL, Timeout: 5 * time.Second},
+	}, 1)
+	require.NoError(t, err)
+	defer np.Close()
+
+	to := common.HexToAddress("0xNonExistent")
+
+	// WHEN: 调用 EstimateGas(ctx, msg)
+	_, err = np.EstimateGas(context.Background(), ethereum.CallMsg{
+		To:   &to,
+		Data: common.Hex2Bytes("deadbeef"),
+	})
+
+	// THEN: 返回 RPC 错误
+	assert.Error(t, err)
+}
+
+// TestNodePool_SendTransaction_成功路径 测试 SendTransaction 成功广播。
+func TestNodePool_SendTransaction_成功路径(t *testing.T) {
+	// GIVEN: 交易已签名，node-1 可用
+	s := newMethodRoutingRPCServer(t, map[string]string{
+		"eth_sendRawTransaction": `{"jsonrpc":"2.0","id":1,"result":"0xabc"}`,
+	})
+	defer s.Close()
+
+	np, err := NewNodePool([]config.ChainNodeConfig{
+		{Name: "node1", HTTPURL: s.URL, Timeout: 5 * time.Second},
+	}, 1)
+	require.NoError(t, err)
+	defer np.Close()
+
+	signedTx := newDummySignedTx(t)
+
+	// WHEN: 调用 SendTransaction(ctx, signedTx)
+	err = np.SendTransaction(context.Background(), signedTx)
+
+	// THEN: 通过 node-1 广播成功
+	require.NoError(t, err)
+}
+
+// TestNodePool_SendTransaction_高优先级节点失败fallback 测试高优先级节点失败时的 fallback。
+func TestNodePool_SendTransaction_高优先级节点失败fallback(t *testing.T) {
+	// GIVEN: node-1 不可用（持续返回错误）
+	// AND: node-2 可用
+	failCount := 0
+	s1 := newDynamicRPCServer(t, func() string {
+		failCount++
+		return `{"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"internal error"}}`
+	})
+	defer s1.Close()
+
+	s2 := newMethodRoutingRPCServer(t, map[string]string{
+		"eth_sendRawTransaction": `{"jsonrpc":"2.0","id":1,"result":"0xabc"}`,
+	})
+	defer s2.Close()
+
+	np, err := NewNodePool([]config.ChainNodeConfig{
+		{Name: "primary", HTTPURL: s1.URL, Timeout: 5 * time.Second, Priority: 1},
+		{Name: "backup", HTTPURL: s2.URL, Timeout: 5 * time.Second, Priority: 2},
+	}, 1)
+	require.NoError(t, err)
+	defer np.Close()
+
+	signedTx := newDummySignedTx(t)
+
+	// WHEN: 调用 SendTransaction(ctx, signedTx)
+	err = np.SendTransaction(context.Background(), signedTx)
+
+	// THEN: 跳过 node-1，使用 node-2 广播成功
+	require.NoError(t, err)
+	assert.Equal(t, 1, failCount, "主节点应被调用过")
+}
+
+// TestNodePool_SuggestGasPrice_成功路径 测试 SuggestGasPrice 成功获取 gasPrice。
+func TestNodePool_SuggestGasPrice_成功路径(t *testing.T) {
+	// GIVEN: NodePool 有可用节点
+	// AND: 当前链 gas 价格约为 20 Gwei
+	s := newMethodRoutingRPCServer(t, map[string]string{
+		"eth_gasPrice": `{"jsonrpc":"2.0","id":1,"result":"0x4a817c800"}`,
+	})
+	defer s.Close()
+
+	np, err := NewNodePool([]config.ChainNodeConfig{
+		{Name: "node1", HTTPURL: s.URL, Timeout: 5 * time.Second},
+	}, 1)
+	require.NoError(t, err)
+	defer np.Close()
+
+	// WHEN: 调用 SuggestGasPrice(ctx)
+	gasPrice, err := np.SuggestGasPrice(context.Background())
+
+	// THEN: 返回 *big.Int 类型的 gas 价格（20 Gwei = 20000000000）
+	require.NoError(t, err)
+	assert.Equal(t, int64(20000000000), gasPrice.Int64())
+}

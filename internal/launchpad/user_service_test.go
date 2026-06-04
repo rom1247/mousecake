@@ -129,13 +129,13 @@ func newTestUserService(
 	querySvc := newQuerySvc(saleRepo, poolRepo, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
 	return NewUserService(prepareSvc, querySvc, encoder, "MousePadByTier", chain,
-		saleRepo, poolRepo, tierLimitRepo, whitelistRepo, userPoolStateRepo, creditRepo)
+		saleRepo, poolRepo, tierLimitRepo, whitelistRepo, userPoolStateRepo, creditRepo, nil)
 }
 
 // --- Deposit 测试（Task 9.1）---
 
 func TestUserService_Deposit_NormalPool(t *testing.T) {
-	sale := domain.ReconstructSale(1, "0x1", 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
+	sale := domain.ReconstructSale(1, "0x1", domain.SaleDeployed, 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
 	saleRepo := &mockUserSaleRepo{sale: sale}
 	poolRepo := &mockUserPoolRepo{pool: makeNormalPool(1)}
 	tierLimitRepo := &mockUserTierLimitRepo{}
@@ -154,7 +154,7 @@ func TestUserService_Deposit_NormalPool(t *testing.T) {
 }
 
 func TestUserService_Deposit_ExceedTierLimit(t *testing.T) {
-	sale := domain.ReconstructSale(1, "0x1", 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
+	sale := domain.ReconstructSale(1, "0x1", domain.SaleDeployed, 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
 	saleRepo := &mockUserSaleRepo{sale: sale}
 	poolRepo := &mockUserPoolRepo{pool: makeNormalPool(1)}
 	tierLimitRepo := &mockUserTierLimitRepo{
@@ -178,7 +178,7 @@ func TestUserService_Deposit_ExceedTierLimit(t *testing.T) {
 }
 
 func TestUserService_Deposit_SpecialPool_NotWhitelisted(t *testing.T) {
-	sale := domain.ReconstructSale(1, "0x1", 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
+	sale := domain.ReconstructSale(1, "0x1", domain.SaleDeployed, 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
 	saleRepo := &mockUserSaleRepo{sale: sale}
 	poolRepo := &mockUserPoolRepo{pool: makeSpecialPool(1)}
 	wlRepo := &mockUserWhitelistRepo{result: false}
@@ -196,7 +196,7 @@ func TestUserService_Deposit_SpecialPool_NotWhitelisted(t *testing.T) {
 }
 
 func TestUserService_Deposit_SpecialPool_Whitelisted(t *testing.T) {
-	sale := domain.ReconstructSale(1, "0x1", 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
+	sale := domain.ReconstructSale(1, "0x1", domain.SaleDeployed, 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
 	saleRepo := &mockUserSaleRepo{sale: sale}
 	poolRepo := &mockUserPoolRepo{pool: makeSpecialPool(1)}
 	wlRepo := &mockUserWhitelistRepo{result: true}
@@ -215,7 +215,7 @@ func TestUserService_Deposit_SpecialPool_Whitelisted(t *testing.T) {
 }
 
 func TestUserService_Deposit_InvalidAmount(t *testing.T) {
-	sale := domain.ReconstructSale(1, "0x1", 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
+	sale := domain.ReconstructSale(1, "0x1", domain.SaleDeployed, 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
 	saleRepo := &mockUserSaleRepo{sale: sale}
 	poolRepo := &mockUserPoolRepo{pool: makeNormalPool(1)}
 	tierLimitRepo := &mockUserTierLimitRepo{}
@@ -234,7 +234,7 @@ func TestUserService_Deposit_InvalidAmount(t *testing.T) {
 // --- Harvest 测试（Task 9.3）---
 
 func TestUserService_Harvest(t *testing.T) {
-	sale := domain.ReconstructSale(1, "0x1", 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
+	sale := domain.ReconstructSale(1, "0x1", domain.SaleDeployed, 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)
 	saleRepo := &mockUserSaleRepo{sale: sale}
 
 	svc := newTestUserService(saleRepo, nil, nil, nil, nil, nil)
@@ -264,7 +264,12 @@ func TestUserService_Harvest_SaleNotFound(t *testing.T) {
 // --- Release 测试（Task 9.5）---
 
 func TestUserService_Release(t *testing.T) {
-	svc := newTestUserService(nil, nil, nil, nil, nil, nil)
+	saleRepo := &mockUserSaleRepo{sale: domain.ReconstructSale(1, "0x1", domain.SaleDeployed, 1, "", "", "", "", "", 0, 0, 0, false, 0, now, now, nil)}
+	svc := newTestUserService(saleRepo, nil, nil, nil, nil, nil)
+	// 设置 findVestingScheduleByID 函数，返回一个关联 sale_id=1 的 schedule
+	svc.findVestingScheduleByID = func(_ context.Context, _ int64) (*domain.VestingSchedule, error) {
+		return domain.ReconstructVestingSchedule(1, 1, 0, 1, "0xUser", big.NewInt(1000), big.NewInt(0), now, now), nil
+	}
 
 	tx, err := svc.Release(context.Background(), ReleaseInput{
 		CallerAddress: "0xUser",

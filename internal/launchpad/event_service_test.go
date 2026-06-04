@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/glebarez/sqlite"
+	"github.com/mousecake-go/mousecake-go/internal/launchpad/domain"
 	syncpkg "github.com/mousecake-go/mousecake-go/internal/shared/sync"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,6 +31,7 @@ func setupEventTestDB(t *testing.T) *gorm.DB {
 		&vestingReleasePO{},
 		&whitelistPO{},
 		&tierParamPO{},
+		&prepareTxPO{},
 	)
 	require.NoError(t, err, "AutoMigrate 失败")
 
@@ -212,7 +215,7 @@ func TestEventService_OnSaleCreated(t *testing.T) {
 			t.Parallel()
 
 			db := setupEventTestDB(t)
-			svc := NewEventService(db)
+			svc := NewEventService(db, nil)
 			ctx := context.Background()
 
 			event := makeChainEvent("SaleCreated", tt.contractAddr, 1, 100, "0xtx001", tt.eventData)
@@ -240,7 +243,7 @@ func TestEventService_OnSaleCreated_Idempotent(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 	contractAddr := "0xsale_idem"
 
@@ -299,7 +302,7 @@ func TestEventService_OnPoolSet(t *testing.T) {
 			t.Parallel()
 
 			db := setupEventTestDB(t)
-			svc := NewEventService(db)
+			svc := NewEventService(db, nil)
 			ctx := context.Background()
 
 			contractAddr := "0xsale_pool"
@@ -336,7 +339,7 @@ func TestEventService_OnPoolSet_SaleNotFound(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	eventData := map[string]any{
@@ -379,7 +382,7 @@ func TestEventService_OnDeposited_ThreeTableTx(t *testing.T) {
 			t.Parallel()
 
 			db := setupEventTestDB(t)
-			svc := NewEventService(db)
+			svc := NewEventService(db, nil)
 			ctx := context.Background()
 
 			contractAddr := "0xsale_deposit"
@@ -431,7 +434,7 @@ func TestEventService_OnDeposited_Idempotent(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	contractAddr := "0xsale_idem_dep"
@@ -468,7 +471,7 @@ func TestEventService_OnDeposited_NoRPCInTx(t *testing.T) {
 
 	// 使用真实 DB 执行完整流程验证纯 DB 操作
 	db := setupEventTestDB(t)
-	svc = NewEventService(db)
+	svc = NewEventService(db, nil)
 	ctx := context.Background()
 
 	contractAddr := "0xsale_norpc"
@@ -513,7 +516,7 @@ func TestEventService_OnHarvested(t *testing.T) {
 			t.Parallel()
 
 			db := setupEventTestDB(t)
-			svc := NewEventService(db)
+			svc := NewEventService(db, nil)
 			ctx := context.Background()
 
 			contractAddr := "0xsale_harvest"
@@ -563,7 +566,7 @@ func TestEventService_OnReleased(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	amount := "300000000000000000"
@@ -592,7 +595,7 @@ func TestEventService_OnRevoked(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	contractAddr := "0xsale_revoke"
@@ -620,7 +623,7 @@ func TestEventService_OnWhitelistAdded(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	contractAddr := "0xsale_wl"
@@ -650,7 +653,7 @@ func TestEventService_OnWhitelistAdded_Idempotent(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	contractAddr := "0xsale_wl_idem"
@@ -678,7 +681,7 @@ func TestEventService_OnWhitelistRemoved(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	contractAddr := "0xsale_wlrm"
@@ -721,7 +724,7 @@ func TestEventService_OnUpdateCeiling(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	chainID := 1
@@ -754,7 +757,7 @@ func TestEventService_OnUpdateCeiling_NoRecord(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	eventData := map[string]any{"value": "999"}
@@ -772,7 +775,7 @@ func TestEventService_OnUpdateMultiplier(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	chainID := 1
@@ -808,7 +811,7 @@ func TestEventService_OnUpdateTierBaseAmount(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	chainID := 1
@@ -844,7 +847,7 @@ func TestEventService_OnDeposited_SaleNotFound(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	eventData := map[string]any{
@@ -865,7 +868,7 @@ func TestEventService_OnHarvested_SaleNotFound(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	eventData := map[string]any{
@@ -889,7 +892,7 @@ func TestEventService_OnWhitelistAdded_SaleNotFound(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	eventData := map[string]any{
@@ -909,7 +912,7 @@ func TestEventService_OnWhitelistRemoved_SaleNotFound(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	eventData := map[string]any{
@@ -929,7 +932,7 @@ func TestEventService_HandleEvent_SaleCreatedRoute(t *testing.T) {
 	t.Parallel()
 
 	db := setupEventTestDB(t)
-	svc := NewEventService(db)
+	svc := NewEventService(db, nil)
 	ctx := context.Background()
 
 	eventData := map[string]any{
@@ -947,4 +950,194 @@ func TestEventService_HandleEvent_SaleCreatedRoute(t *testing.T) {
 	var sale salePO
 	require.NoError(t, db.Where("contract_address = ?", "0xsale_route").First(&sale).Error)
 	assert.Equal(t, "0xsale_route", sale.ContractAddress)
+}
+
+// --- OnSaleCreated 回填逻辑测试 ---
+
+// insertDraftSale 插入一条 deploying 状态的 draft sale 记录并返回其 ID。
+func insertDraftSale(t *testing.T, db *gorm.DB) int64 {
+	t.Helper()
+	sale := &salePO{
+		ContractAddress:      "",
+		ChainID:              1,
+		DeployerAddress:      "0xdeployer",
+		OwnerAddress:         "0xowner",
+		RaiseTokenAddress:    "0xraise",
+		OfferingTokenAddress: "0xoffering",
+		MouseTierAddress:     "0xtier",
+		Status:               string(domain.SaleDeploying),
+	}
+	require.NoError(t, db.Create(sale).Error, "插入 draft sale 失败")
+	return sale.ID
+}
+
+// insertPrepareTxWithSaleID 插入一条 PrepareTx 记录，关联指定的 saleID。
+func insertPrepareTxWithSaleID(t *testing.T, db *gorm.DB, txHash string, saleID int64) int64 {
+	t.Helper()
+	ptx := &prepareTxPO{
+		SaleID:        &saleID,
+		OperationType: "create_sale",
+		CallerAddress: "0xadmin",
+		TargetAddress: "0xfactory",
+		Value:         "0",
+		Calldata:      "0xabc",
+		CalldataHash:  "0xhash123",
+		Status:        "confirmed",
+		TxHash:        &txHash,
+		ExpiresAt:     time.Now().Add(24 * time.Hour),
+	}
+	require.NoError(t, db.Create(ptx).Error, "插入 prepare_tx 失败")
+	return ptx.ID
+}
+
+// TestEventService_OnSaleCreated_BackfillDraftSale 测试 SaleCreated 事件通过 PrepareTx 回填 draft sale。
+func TestEventService_OnSaleCreated_BackfillDraftSale(t *testing.T) {
+	t.Parallel()
+
+	db := setupEventTestDB(t)
+	prepareTxRepo := NewPrepareTxRepository(db)
+	svc := NewEventService(db, prepareTxRepo)
+	ctx := context.Background()
+
+	// 1. 插入 draft sale（deploying 状态，contract_address 为空）
+	saleID := insertDraftSale(t, db)
+
+	// 2. 插入 PrepareTx 记录关联该 saleID
+	txHash := "0xtx_backfill_001"
+	insertPrepareTxWithSaleID(t, db, txHash, saleID)
+
+	// 3. 发出 SaleCreated 事件
+	saleAddress := "0xsale_backfilled"
+	eventData := map[string]any{
+		"sale_address":   saleAddress,
+		"creator":        "0xcreator_backfill",
+		"raise_token":    "0xraise_backfill",
+		"offering_token": "0xoffer_backfill",
+		"mouse_tier":     "0xtier_backfill",
+		"deployer":       "0xdeployer_backfill",
+	}
+	event := makeChainEvent("SaleCreated", saleAddress, 1, 100, txHash, eventData)
+
+	err := svc.OnSaleCreated(ctx, event)
+	require.NoError(t, err, "OnSaleCreated 回填不应返回错误")
+
+	// 4. 验证 sale 的 contract_address 和 status 已更新
+	var sale salePO
+	require.NoError(t, db.Where("id = ?", saleID).First(&sale).Error, "应能查到 sale")
+	assert.Equal(t, saleAddress, sale.ContractAddress, "contract_address 应被回填")
+	assert.Equal(t, string(domain.SaleDeployed), sale.Status, "status 应更新为 deployed")
+	assert.Equal(t, "0xdeployer_backfill", sale.DeployerAddress, "deployer_address 应被回填")
+	assert.Equal(t, "0xcreator_backfill", sale.OwnerAddress, "owner_address 应被回填")
+	assert.Equal(t, "0xraise_backfill", sale.RaiseTokenAddress, "raise_token_address 应被回填")
+	assert.Equal(t, "0xoffer_backfill", sale.OfferingTokenAddress, "offering_token_address 应被回填")
+	assert.Equal(t, "0xtier_backfill", sale.MouseTierAddress, "mouse_tier_address 应被回填")
+}
+
+// TestEventService_OnSaleCreated_BackfillIdempotent 测试回填操作的幂等性。
+func TestEventService_OnSaleCreated_BackfillIdempotent(t *testing.T) {
+	t.Parallel()
+
+	db := setupEventTestDB(t)
+	prepareTxRepo := NewPrepareTxRepository(db)
+	svc := NewEventService(db, prepareTxRepo)
+	ctx := context.Background()
+
+	saleID := insertDraftSale(t, db)
+	txHash := "0xtx_idem_backfill"
+	insertPrepareTxWithSaleID(t, db, txHash, saleID)
+
+	saleAddress := "0xsale_idem_backfill"
+	eventData := map[string]any{
+		"sale_address":   saleAddress,
+		"creator":        "0xcreator",
+		"raise_token":    "0xraise",
+		"offering_token": "0xoffer",
+		"mouse_tier":     "0xtier",
+	}
+	event := makeChainEvent("SaleCreated", saleAddress, 1, 100, txHash, eventData)
+
+	// 第一次回填
+	require.NoError(t, svc.OnSaleCreated(ctx, event), "第一次回填应成功")
+
+	// 第二次回填（幂等）
+	require.NoError(t, svc.OnSaleCreated(ctx, event), "重复回填不应返回错误")
+
+	// 验证只有一条 sale 记录且数据正确
+	var sale salePO
+	require.NoError(t, db.Where("id = ?", saleID).First(&sale).Error)
+	assert.Equal(t, saleAddress, sale.ContractAddress, "contract_address 应保持回填值")
+	assert.Equal(t, string(domain.SaleDeployed), sale.Status, "status 应为 deployed")
+}
+
+// TestEventService_OnSaleCreated_NoPrepareTxFallback 测试找不到 PrepareTx 时回退到 FirstOrCreate。
+func TestEventService_OnSaleCreated_NoPrepareTxFallback(t *testing.T) {
+	t.Parallel()
+
+	db := setupEventTestDB(t)
+	prepareTxRepo := NewPrepareTxRepository(db)
+	svc := NewEventService(db, prepareTxRepo)
+	ctx := context.Background()
+
+	saleAddress := "0xsale_fallback"
+	txHash := "0xtx_no_prepare"
+	eventData := map[string]any{
+		"sale_address":   saleAddress,
+		"creator":        "0xcreator",
+		"raise_token":    "0xraise",
+		"offering_token": "0xoffer",
+		"mouse_tier":     "0xtier",
+	}
+	event := makeChainEvent("SaleCreated", saleAddress, 1, 100, txHash, eventData)
+
+	err := svc.OnSaleCreated(ctx, event)
+	require.NoError(t, err, "无 PrepareTx 时应回退到 FirstOrCreate")
+
+	// 验证通过 FirstOrCreate 创建了 sale 记录
+	var sale salePO
+	require.NoError(t, db.Where("contract_address = ?", saleAddress).First(&sale).Error, "应能查到 sale 记录")
+	assert.Equal(t, saleAddress, sale.ContractAddress)
+}
+
+// TestEventService_OnSaleCreated_PrepareTxNilSaleID 测试 PrepareTx.SaleID 为 nil 时回退到 FirstOrCreate。
+func TestEventService_OnSaleCreated_PrepareTxNilSaleID(t *testing.T) {
+	t.Parallel()
+
+	db := setupEventTestDB(t)
+	prepareTxRepo := NewPrepareTxRepository(db)
+	svc := NewEventService(db, prepareTxRepo)
+	ctx := context.Background()
+
+	// 插入 PrepareTx 但 sale_id 为 nil
+	txHash := "0xtx_nil_saleid"
+	ptx := &prepareTxPO{
+		SaleID:        nil,
+		OperationType: "create_sale",
+		CallerAddress: "0xadmin",
+		TargetAddress: "0xfactory",
+		Value:         "0",
+		Calldata:      "0xabc",
+		CalldataHash:  "0xhash_nil",
+		Status:        "confirmed",
+		TxHash:        &txHash,
+		ExpiresAt:     time.Now().Add(24 * time.Hour),
+	}
+	require.NoError(t, db.Create(ptx).Error, "插入 prepare_tx 失败")
+
+	saleAddress := "0xsale_nil_saleid"
+	eventData := map[string]any{
+		"sale_address":   saleAddress,
+		"creator":        "0xcreator",
+		"raise_token":    "0xraise",
+		"offering_token": "0xoffer",
+		"mouse_tier":     "0xtier",
+	}
+	event := makeChainEvent("SaleCreated", saleAddress, 1, 100, txHash, eventData)
+
+	err := svc.OnSaleCreated(ctx, event)
+	require.NoError(t, err, "PrepareTx.SaleID 为 nil 时应回退到 FirstOrCreate")
+
+	// 验证通过 FirstOrCreate 创建了 sale 记录
+	var sale salePO
+	require.NoError(t, db.Where("contract_address = ?", saleAddress).First(&sale).Error, "应能查到 sale 记录")
+	assert.Equal(t, saleAddress, sale.ContractAddress)
 }

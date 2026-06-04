@@ -13,1472 +13,6 @@
     "host": "localhost:8080",
     "basePath": "/api/v1",
     "paths": {
-        "/api/v1/launchpad/admin/prepare/add-whitelist": {
-            "post": {
-                "description": "管理员将用户地址添加到销售白名单",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-管理员"
-                ],
-                "summary": "添加白名单",
-                "parameters": [
-                    {
-                        "description": "白名单参数",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.WhitelistInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/admin/prepare/create-sale": {
-            "post": {
-                "description": "管理员创建新的 IDO 销售合约，生成链上交易数据",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-管理员"
-                ],
-                "summary": "创建 IDO 销售",
-                "parameters": [
-                    {
-                        "description": "创建销售参数",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.CreateSaleInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/admin/prepare/final-withdraw": {
-            "post": {
-                "description": "管理员提取销售结束后的募资和剩余发售代币",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-管理员"
-                ],
-                "summary": "提取资金",
-                "parameters": [
-                    {
-                        "description": "提取参数",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.FinalWithdrawInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/admin/prepare/recover-token": {
-            "post": {
-                "description": "管理员将误转入合约的代币提取到指定地址",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-管理员"
-                ],
-                "summary": "救援误转代币",
-                "parameters": [
-                    {
-                        "description": "救援代币参数",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.RecoverTokenInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/admin/prepare/remove-whitelist": {
-            "post": {
-                "description": "管理员将用户地址从销售白名单中移除",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-管理员"
-                ],
-                "summary": "移除白名单",
-                "parameters": [
-                    {
-                        "description": "白名单参数",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.WhitelistInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/admin/prepare/revoke": {
-            "post": {
-                "description": "管理员撤销指定池的 vesting 计划",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-管理员"
-                ],
-                "summary": "撤销 vesting",
-                "parameters": [
-                    {
-                        "description": "撤销参数",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.RevokeInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/admin/prepare/set-pool": {
-            "post": {
-                "description": "管理员设置 IDO 销售池的参数（发售量、募资量、用户限额、vesting 配置等）",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-管理员"
-                ],
-                "summary": "设置池参数",
-                "parameters": [
-                    {
-                        "description": "池参数",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.SetPoolInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/admin/prepare/set-start-end-block": {
-            "post": {
-                "description": "管理员设置销售的开始和结束区块号",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-管理员"
-                ],
-                "summary": "设置销售时间窗",
-                "parameters": [
-                    {
-                        "description": "时间窗参数",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.SetStartEndBlockInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/admin/prepare/set-tier-limits": {
-            "post": {
-                "description": "管理员设置指定 Tier 的认购额度限制",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-管理员"
-                ],
-                "summary": "设置 Tier 额度",
-                "parameters": [
-                    {
-                        "description": "Tier 额度参数",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.SetTierLimitsInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/admin/sale-meta": {
-            "put": {
-                "description": "管理员更新销售的展示元信息",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-管理员"
-                ],
-                "summary": "更新销售元信息",
-                "parameters": [
-                    {
-                        "description": "更新元信息",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.UpdateSaleMetaInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.SaleMeta"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "管理员为销售创建展示元信息（标题、描述、Banner 等）",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-管理员"
-                ],
-                "summary": "创建销售元信息",
-                "parameters": [
-                    {
-                        "description": "销售元信息",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.CreateSaleMetaInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.SaleMeta"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/admin/token": {
-            "put": {
-                "description": "管理员更新代币的元信息",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-管理员"
-                ],
-                "summary": "更新代币信息",
-                "parameters": [
-                    {
-                        "description": "更新代币信息",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.UpdateTokenInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.Token"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "管理员创建代币的元信息（名称、符号、精度等）",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-管理员"
-                ],
-                "summary": "创建代币信息",
-                "parameters": [
-                    {
-                        "description": "代币信息",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.CreateTokenInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.Token"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/prepare/cancel/{id}": {
-            "post": {
-                "description": "取消指定 ID 的 Prepare 交易",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-通用"
-                ],
-                "summary": "取消 Prepare 交易",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "example": 1,
-                        "description": "Prepare ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/prepare/submit": {
-            "post": {
-                "description": "提交已广播的链上交易哈希，完成 Prepare 记录",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-通用"
-                ],
-                "summary": "提交 Prepare 交易",
-                "parameters": [
-                    {
-                        "description": "提交参数",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.SubmitPrepareRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/prepare/{id}": {
-            "get": {
-                "description": "根据 ID 获取 Prepare 交易的详细信息",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-通用"
-                ],
-                "summary": "获取 Prepare 详情",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "example": 1,
-                        "description": "Prepare ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/user/deposits": {
-            "get": {
-                "description": "查询用户在指定销售中的申购记录",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-用户"
-                ],
-                "summary": "获取用户申购记录",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "销售 ID",
-                        "name": "sale_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "用户钱包地址",
-                        "name": "user_address",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/user/estimate-allocation": {
-            "get": {
-                "description": "根据用户投入金额预估可获得的发售代币数量",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-用户"
-                ],
-                "summary": "预估配售",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "销售 ID",
-                        "name": "sale_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "池索引",
-                        "name": "pool_index",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "用户投入金额",
-                        "name": "user_total",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/user/harvest": {
-            "get": {
-                "description": "查询用户在指定销售中的结算记录",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-用户"
-                ],
-                "summary": "获取用户结算记录",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "销售 ID",
-                        "name": "sale_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "用户钱包地址",
-                        "name": "user_address",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/user/prepare/deposit": {
-            "post": {
-                "description": "用户参与 IDO 申购，校验资格后生成链上交易数据",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-用户"
-                ],
-                "summary": "用户申购",
-                "parameters": [
-                    {
-                        "description": "申购参数",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.DepositInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/user/prepare/harvest": {
-            "post": {
-                "description": "用户结算 IDO 认购结果，生成链上交易数据",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-用户"
-                ],
-                "summary": "用户结算",
-                "parameters": [
-                    {
-                        "description": "结算参数",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.HarvestInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/user/prepare/release": {
-            "post": {
-                "description": "用户释放 vesting 锁仓代币，生成链上交易数据",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-用户"
-                ],
-                "summary": "用户释放 vesting",
-                "parameters": [
-                    {
-                        "description": "释放参数",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_launchpad.ReleaseInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/user/sales": {
-            "get": {
-                "description": "分页获取公开的 IDO 销售列表",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-用户"
-                ],
-                "summary": "获取销售列表",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "页码",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "maximum": 100,
-                        "type": "integer",
-                        "default": 10,
-                        "description": "每页数量",
-                        "name": "page_size",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/user/sales/{id}": {
-            "get": {
-                "description": "根据 ID 获取 IDO 销售的详细信息",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-用户"
-                ],
-                "summary": "获取销售详情",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "example": 1,
-                        "description": "销售 ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/user/tier": {
-            "get": {
-                "description": "根据链上 MouseTier 合约查询用户的 Tier 等级",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-用户"
-                ],
-                "summary": "获取用户 Tier 等级",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "MouseTier 合约地址",
-                        "name": "mouse_tier_address",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "用户钱包地址",
-                        "name": "user_address",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/user/vesting": {
-            "get": {
-                "description": "查询用户的 vesting 锁仓释放计划",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-用户"
-                ],
-                "summary": "获取用户 vesting 计划",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "受益人钱包地址",
-                        "name": "beneficiary",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/launchpad/user/whitelist-check": {
-            "get": {
-                "description": "检查用户是否在指定销售的白名单中",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Launchpad-用户"
-                ],
-                "summary": "检查白名单",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "销售 ID",
-                        "name": "sale_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "用户钱包地址",
-                        "name": "user_address",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
         "/auth/admin/login": {
             "post": {
                 "description": "使用用户名和密码登录管理员账号，签发 JWT token",
@@ -1696,6 +230,1530 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/admin/chain-state/refresh": {
+            "post": {
+                "description": "管理员按 scope 刷新链上合约状态（Sale/Pool/Tier/UserPool/Vesting）并更新数据库",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "刷新链上状态",
+                "parameters": [
+                    {
+                        "description": "刷新参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.ChainStateRefreshRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad.ChainStateRefreshResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/admin/prepare/add-whitelist": {
+            "post": {
+                "description": "管理员将用户地址添加到销售白名单",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "添加白名单",
+                "parameters": [
+                    {
+                        "description": "白名单参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.WhitelistInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/admin/prepare/create-sale": {
+            "post": {
+                "description": "管理员创建新的 IDO 销售合约，生成链上交易数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "创建 IDO 销售",
+                "parameters": [
+                    {
+                        "description": "创建销售参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.CreateSaleInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/admin/prepare/final-withdraw": {
+            "post": {
+                "description": "管理员提取销售结束后的募资和剩余发售代币",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "提取资金",
+                "parameters": [
+                    {
+                        "description": "提取参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.FinalWithdrawInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/admin/prepare/recover-token": {
+            "post": {
+                "description": "管理员将误转入合约的代币提取到指定地址",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "救援误转代币",
+                "parameters": [
+                    {
+                        "description": "救援代币参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.RecoverTokenInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/admin/prepare/remove-whitelist": {
+            "post": {
+                "description": "管理员将用户地址从销售白名单中移除",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "移除白名单",
+                "parameters": [
+                    {
+                        "description": "白名单参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.WhitelistInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/admin/prepare/revoke": {
+            "post": {
+                "description": "管理员撤销指定池的 vesting 计划",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "撤销 vesting",
+                "parameters": [
+                    {
+                        "description": "撤销参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.RevokeInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/admin/prepare/set-pool": {
+            "post": {
+                "description": "管理员设置 IDO 销售池的参数（发售量、募资量、用户限额、vesting 配置等）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "设置池参数",
+                "parameters": [
+                    {
+                        "description": "池参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.SetPoolInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/admin/prepare/set-start-end-block": {
+            "post": {
+                "description": "管理员设置销售的开始和结束区块号",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "设置销售时间窗",
+                "parameters": [
+                    {
+                        "description": "时间窗参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.SetStartEndBlockInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/admin/prepare/set-tier-limits": {
+            "post": {
+                "description": "管理员设置指定 Tier 的认购额度限制",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "设置 Tier 额度",
+                "parameters": [
+                    {
+                        "description": "Tier 额度参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.SetTierLimitsInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/admin/sale-meta": {
+            "put": {
+                "description": "管理员更新销售的展示元信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "更新销售元信息",
+                "parameters": [
+                    {
+                        "description": "更新元信息",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.UpdateSaleMetaInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.SaleMeta"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "管理员为销售创建展示元信息（标题、描述、Banner 等）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "创建销售元信息",
+                "parameters": [
+                    {
+                        "description": "销售元信息",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.CreateSaleMetaInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.SaleMeta"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/admin/token": {
+            "put": {
+                "description": "管理员更新代币的元信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "更新代币信息",
+                "parameters": [
+                    {
+                        "description": "更新代币信息",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.UpdateTokenInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.Token"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "管理员创建代币的元信息（名称、符号、精度等）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-管理员"
+                ],
+                "summary": "创建代币信息",
+                "parameters": [
+                    {
+                        "description": "代币信息",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.CreateTokenInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.Token"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/prepare/cancel/{id}": {
+            "post": {
+                "description": "取消指定 ID 的 Prepare 交易",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-通用"
+                ],
+                "summary": "取消 Prepare 交易",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "example": 1,
+                        "description": "Prepare ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/prepare/submit": {
+            "post": {
+                "description": "提交已广播的链上交易哈希，完成 Prepare 记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-通用"
+                ],
+                "summary": "提交 Prepare 交易",
+                "parameters": [
+                    {
+                        "description": "提交参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.SubmitPrepareRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/prepare/{id}": {
+            "get": {
+                "description": "根据 ID 获取 Prepare 交易的详细信息",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-通用"
+                ],
+                "summary": "获取 Prepare 详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "example": 1,
+                        "description": "Prepare ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/user/deposits": {
+            "get": {
+                "description": "查询用户在指定销售中的申购记录",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-用户"
+                ],
+                "summary": "获取用户申购记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "销售 ID",
+                        "name": "sale_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户钱包地址",
+                        "name": "user_address",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/user/estimate-allocation": {
+            "get": {
+                "description": "根据用户投入金额预估可获得的发售代币数量",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-用户"
+                ],
+                "summary": "预估配售",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "销售 ID",
+                        "name": "sale_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "池索引",
+                        "name": "pool_index",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户投入金额",
+                        "name": "user_total",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/user/harvest": {
+            "get": {
+                "description": "查询用户在指定销售中的结算记录",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-用户"
+                ],
+                "summary": "获取用户结算记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "销售 ID",
+                        "name": "sale_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户钱包地址",
+                        "name": "user_address",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/user/prepare/deposit": {
+            "post": {
+                "description": "用户参与 IDO 申购，校验资格后生成链上交易数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-用户"
+                ],
+                "summary": "用户申购",
+                "parameters": [
+                    {
+                        "description": "申购参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.DepositInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/user/prepare/harvest": {
+            "post": {
+                "description": "用户结算 IDO 认购结果，生成链上交易数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-用户"
+                ],
+                "summary": "用户结算",
+                "parameters": [
+                    {
+                        "description": "结算参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.HarvestInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/user/prepare/release": {
+            "post": {
+                "description": "用户释放 vesting 锁仓代币，生成链上交易数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-用户"
+                ],
+                "summary": "用户释放 vesting",
+                "parameters": [
+                    {
+                        "description": "释放参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_launchpad.ReleaseInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_launchpad_domain.PrepareTx"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/user/sales": {
+            "get": {
+                "description": "分页获取公开的 IDO 销售列表",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-用户"
+                ],
+                "summary": "获取销售列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/user/sales/{id}": {
+            "get": {
+                "description": "根据 ID 获取 IDO 销售的详细信息",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-用户"
+                ],
+                "summary": "获取销售详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "example": 1,
+                        "description": "销售 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/user/tier": {
+            "get": {
+                "description": "根据链上 MouseTier 合约查询用户的 Tier 等级",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-用户"
+                ],
+                "summary": "获取用户 Tier 等级",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "MouseTier 合约地址",
+                        "name": "mouse_tier_address",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户钱包地址",
+                        "name": "user_address",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/user/vesting": {
+            "get": {
+                "description": "查询用户的 vesting 锁仓释放计划",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-用户"
+                ],
+                "summary": "获取用户 vesting 计划",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "受益人钱包地址",
+                        "name": "beneficiary",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/user/whitelist-check": {
+            "get": {
+                "description": "检查用户是否在指定销售的白名单中",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-用户"
+                ],
+                "summary": "检查白名单",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "销售 ID",
+                        "name": "sale_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户钱包地址",
+                        "name": "user_address",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/Response"
                         }
@@ -1964,6 +2022,61 @@
                 }
             }
         },
+        "internal_launchpad.ChainStateRefreshRequest": {
+            "type": "object",
+            "required": [
+                "sale_address",
+                "scopes"
+            ],
+            "properties": {
+                "pool_index": {
+                    "description": "PoolIndex 可选，scope=pool 和 scope=user_pool 时必填。",
+                    "type": "integer"
+                },
+                "sale_address": {
+                    "description": "SaleAddress 销售合约地址。",
+                    "type": "string"
+                },
+                "schedule_ids": {
+                    "description": "ScheduleIDs 可选，scope=vesting 时指定 schedule IDs。",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "scopes": {
+                    "description": "Scopes 刷新范围列表，可选值：sale/pool/tier_params/tier_limits/user_pool/vesting。",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tier": {
+                    "description": "Tier 可选，scope=tier_limits 时指定单个 tier。",
+                    "type": "integer"
+                },
+                "user_address": {
+                    "description": "UserAddress 可选，scope=user_pool 时指定单用户。",
+                    "type": "string"
+                }
+            }
+        },
+        "internal_launchpad.ChainStateRefreshResponse": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "description": "Results 各 scope 的刷新结果，key 为 scope 名。",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/internal_launchpad.ScopeResult"
+                    }
+                },
+                "sale_id": {
+                    "description": "SaleID 销售记录 ID。",
+                    "type": "integer"
+                }
+            }
+        },
         "internal_launchpad.CreateSaleInput": {
             "type": "object",
             "required": [
@@ -2184,6 +2297,22 @@
                 },
                 "sale_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_launchpad.ScopeResult": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "description": "Error 刷新错误信息。",
+                    "type": "string"
+                },
+                "updated_fields": {
+                    "description": "UpdatedFields 更新的字段列表。",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
