@@ -52,6 +52,9 @@ rate_limit:
   account:
     rate: 10
     burst: 15
+  address:
+    rate: 5
+    burst: 8
 
 admin:
   username: admin

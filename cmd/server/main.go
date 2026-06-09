@@ -99,8 +99,9 @@ func main() {
 		middleware.RequestID(),
 		middleware.AccessLog(slog.Default()),
 		middleware.NewCORS(cfg.CORS),
+		middleware.NewIPRateLimit(cfg.RateLimit.IP.Rate, cfg.RateLimit.IP.Burst),
 	)
-	handler.RegisterRoutes(r.Group("/api/v1/auth"))
+	handler.RegisterRoutes(r.Group("/api/v1/auth"), cfg.RateLimit)
 
 	// Quote 模块初始化
 	quoteRegistry := quote.NewProviderRegistry()

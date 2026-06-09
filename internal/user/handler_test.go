@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/mousecake-go/mousecake-go/config"
 	"github.com/mousecake-go/mousecake-go/internal/shared/auth"
 	"github.com/mousecake-go/mousecake-go/internal/user/domain"
 )
@@ -28,7 +29,11 @@ func setupHandler() (*Handler, *mockUserRepo, *gin.Engine) {
 	handler := NewHandler(svc, jwtSvc)
 
 	r := gin.New()
-	handler.RegisterRoutes(r.Group("/api/v1/auth"))
+	handler.RegisterRoutes(r.Group("/api/v1/auth"), config.RateLimitConfig{
+		IP:      config.RateLimitRule{Rate: 100, Burst: 200},
+		Account: config.RateLimitRule{Rate: 100, Burst: 200},
+		Address: config.RateLimitRule{Rate: 100, Burst: 200},
+	})
 	return handler, repo, r
 }
 
@@ -260,7 +265,11 @@ func TestHandler_WalletVerify_ExpiresInMatchesConfig(t *testing.T) {
 	signature := signTestMessage(msg, privateKey)
 
 	r := gin.New()
-	handler.RegisterRoutes(r.Group("/api/v1/auth"))
+	handler.RegisterRoutes(r.Group("/api/v1/auth"), config.RateLimitConfig{
+		IP:      config.RateLimitRule{Rate: 100, Burst: 200},
+		Account: config.RateLimitRule{Rate: 100, Burst: 200},
+		Address: config.RateLimitRule{Rate: 100, Burst: 200},
+	})
 
 	body, _ := json.Marshal(map[string]string{"message": msg, "signature": signature})
 	w := httptest.NewRecorder()
@@ -289,7 +298,11 @@ func TestHandler_AdminLogin_ExpiresInMatchesConfig(t *testing.T) {
 	repo.usersByID[1] = admin
 
 	r := gin.New()
-	handler.RegisterRoutes(r.Group("/api/v1/auth"))
+	handler.RegisterRoutes(r.Group("/api/v1/auth"), config.RateLimitConfig{
+		IP:      config.RateLimitRule{Rate: 100, Burst: 200},
+		Account: config.RateLimitRule{Rate: 100, Burst: 200},
+		Address: config.RateLimitRule{Rate: 100, Burst: 200},
+	})
 
 	body, _ := json.Marshal(map[string]string{"username": "admin", "password": "password123"})
 	w := httptest.NewRecorder()

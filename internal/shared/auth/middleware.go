@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -37,6 +38,7 @@ func NewAuthMiddleware(svc *JWTService) gin.HandlerFunc {
 		c.Set("user_id", claims.UserID)
 		c.Set("type", string(claims.Type))
 		c.Set("is_admin", claims.IsAdmin)
+		c.Set("account_key", "account:"+strconv.FormatInt(claims.UserID, 10))
 		c.Next()
 	}
 }

@@ -77,6 +77,8 @@ type CORSConfig struct {
 type RateLimitConfig struct {
 	IP      RateLimitRule `json:"ip" mapstructure:"ip"`
 	Account RateLimitRule `json:"account" mapstructure:"account"`
+	// Address 按钱包地址维度的限流规则，适用于未认证的钱包登录路由。
+	Address RateLimitRule `json:"address" mapstructure:"address"`
 }
 
 // RateLimitRule 定义单个维度的限流规则。
@@ -364,6 +366,7 @@ func bindEnvVars(v *viper.Viper) {
 		"cors.expose_headers", "cors.allow_credentials", "cors.max_age",
 		"rate_limit.ip.rate", "rate_limit.ip.burst",
 		"rate_limit.account.rate", "rate_limit.account.burst",
+		"rate_limit.address.rate", "rate_limit.address.burst",
 		"admin.username", "admin.password",
 		"log.level", "log.format", "log.add_source",
 		"launchpad.rpc_url", "launchpad.chain_id", "launchpad.mouse_pad_by_tier_abi",
@@ -409,6 +412,8 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("rate_limit.ip.burst", 30)
 	v.SetDefault("rate_limit.account.rate", 10)
 	v.SetDefault("rate_limit.account.burst", 15)
+	v.SetDefault("rate_limit.address.rate", 5)
+	v.SetDefault("rate_limit.address.burst", 8)
 
 	// 链
 	v.SetDefault("chains.allowed_chain_ids", []int{1, 5, 11155111})

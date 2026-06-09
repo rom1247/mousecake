@@ -5,9 +5,13 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/mousecake-go/mousecake-go/config"
+	"github.com/mousecake-go/mousecake-go/internal/shared/middleware"
 
 	"github.com/mousecake-go/mousecake-go/internal/shared/auth"
 	"github.com/mousecake-go/mousecake-go/internal/shared/errs"
@@ -72,16 +76,19 @@ func NewHandler(svc *Service, jwtSvc *auth.JWTService) *Handler {
 }
 
 // RegisterRoutes 将 handler 绑定到 Gin RouterGroup，应用限流和认证中间件。
-func (h *Handler) RegisterRoutes(rg *gin.RouterGroup) {
+func (h *Handler) RegisterRoutes(rg *gin.RouterGroup, rlCfg config.RateLimitConfig) {
+	addressRL := middleware.NewAddressRateLimit(rlCfg.Address.Rate, rlCfg.Address.Burst)
+
 	auth := rg.Group("")
 	{
-		auth.POST("/wallet/nonce", h.walletNonce)
-		auth.POST("/wallet/verify", h.walletVerify)
+		auth.POST("/wallet/nonce", addressRL, h.walletNonce)
+		auth.POST("/wallet/verify", addressRL, h.walletVerify)
 		auth.POST("/admin/login", h.adminLogin)
 	}
 
+	accountRL := middleware.NewAccountRateLimit(rlCfg.Account.Rate, rlCfg.Account.Burst)
 	me := rg.Group("")
-	me.Use(authMiddleware(h.jwtSvc))
+	me.Use(authMiddleware(h.jwtSvc), accountRL)
 	{
 		me.GET("/me", h.getMe)
 	}
@@ -274,6 +281,7 @@ func authMiddleware(jwtSvc *auth.JWTService) gin.HandlerFunc {
 		c.Set("user_id", claims.UserID)
 		c.Set("type", string(claims.Type))
 		c.Set("is_admin", claims.IsAdmin)
+		c.Set("account_key", "account:"+strconv.FormatInt(claims.UserID, 10))
 		c.Next()
 	}
 }
