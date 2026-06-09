@@ -14,7 +14,7 @@ import (
 )
 
 // durationType 用于 reflect.TypeOf 比较。
-var durationType = reflect.TypeOf(time.Duration(0))
+var durationType = reflect.TypeFor[time.Duration]()
 
 func main() {
 	r := &jsonschema.Reflector{
@@ -35,7 +35,7 @@ func main() {
 
 	s := r.Reflect(&config.Config{})
 	s.Title = "MouseCake Go 配置"
-	s.Description = "mousecake-go 应用的 YAML 配置文件 Schema"
+	s.Description = "mousecake 应用的 YAML 配置文件 Schema"
 	s.Version = "https://json-schema.org/draft/2020-12/schema"
 
 	data, err := json.MarshalIndent(s, "", "  ")
@@ -44,7 +44,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	outPath := "app.schema.json"
+	outPath := "config/app.schema.json"
 	if err := os.WriteFile(outPath, data, 0o644); err != nil {
 		fmt.Fprintf(os.Stderr, "写入 %s 失败: %v\n", outPath, err)
 		os.Exit(1)

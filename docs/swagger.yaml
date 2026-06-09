@@ -11,6 +11,105 @@ definitions:
         description: Message 响应消息描述。
         type: string
     type: object
+  internal_chain.ArgInfo:
+    properties:
+      name:
+        description: Name 参数名。
+        type: string
+      type:
+        description: Type Solidity 类型字符串（如 uint256、address）。
+        type: string
+    type: object
+  internal_chain.ContractQueryRequest:
+    properties:
+      address:
+        description: Address 可选，指定合约地址（覆盖注册表中的默认地址）。
+        type: string
+      args:
+        description: Args 方法参数列表（JSON 值）。
+        items: {}
+        type: array
+      block:
+        description: Block 可选，查询的区块号（十六进制字符串或 "latest"/"pending"）。
+        type: string
+      contract:
+        description: Contract 合约名称（注册表中的名称）。
+        type: string
+      method:
+        description: Method 方法名称。
+        type: string
+    required:
+    - contract
+    - method
+    type: object
+  internal_chain.ContractQueryResult:
+    properties:
+      block_number:
+        description: BlockNumber 交易所在区块号。
+        type: integer
+      events:
+        description: Events 写入调用触发的事件。
+        items:
+          $ref: '#/definitions/internal_chain.ParsedEvent'
+        type: array
+      gas_used:
+        description: GasUsed 交易消耗的 gas。
+        type: integer
+      method:
+        description: Method 方法名称。
+        type: string
+      mutability:
+        description: Mutability 状态可变性。
+        type: string
+      outputs:
+        description: Outputs 只读调用的返回值列表（JSON 安全格式）。
+        items: {}
+        type: array
+      tx_hash:
+        description: TxHash 写入调用的交易哈希。
+        type: string
+    type: object
+  internal_chain.MethodInfo:
+    properties:
+      input_types:
+        description: InputTypes 输入参数类型描述列表。
+        items:
+          $ref: '#/definitions/internal_chain.ArgInfo'
+        type: array
+      mutability:
+        description: Mutability 状态可变性（view/pure/nonpayable/payable）。
+        type: string
+      name:
+        description: Name 方法名。
+        type: string
+      output_types:
+        description: OutputTypes 输出参数类型描述列表。
+        items:
+          $ref: '#/definitions/internal_chain.ArgInfo'
+        type: array
+      selector:
+        description: Selector 函数选择器（4 字节十六进制，如 "0xedac985b"）。
+        type: string
+    type: object
+  internal_chain.ParsedEvent:
+    properties:
+      address:
+        description: Address 触发事件的合约地址。
+        items:
+          format: int32
+          type: integer
+        type: array
+      fields:
+        additionalProperties: {}
+        description: Fields 事件字段的键值映射，big.Int 已转为十进制字符串，Address 已转为十六进制字符串。
+        type: object
+      logIndex:
+        description: LogIndex 日志在区块中的索引。
+        type: integer
+      name:
+        description: Name 事件名称（如 "Deposited"、"Harvested"）。
+        type: string
+    type: object
   internal_launchpad.ChainStateRefreshRequest:
     properties:
       pool_index:
@@ -58,6 +157,9 @@ definitions:
       caller_address:
         description: CallerAddress 管理员地址。
         type: string
+      chain_id:
+        description: ChainID 链 ID。
+        type: integer
       end_block:
         description: EndBlock 销售结束区块号。
         type: integer
@@ -149,10 +251,13 @@ definitions:
         type: string
       raising_amount:
         type: string
+      sale_id:
+        type: integer
     required:
     - caller_address
     - offering_amount
     - raising_amount
+    - sale_id
     type: object
   internal_launchpad.HarvestInput:
     properties:
@@ -173,6 +278,8 @@ definitions:
         type: string
       caller_address:
         type: string
+      sale_id:
+        type: integer
       to:
         type: string
       token_address:
@@ -180,6 +287,7 @@ definitions:
     required:
     - amount
     - caller_address
+    - sale_id
     - to
     - token_address
     type: object
@@ -279,11 +387,14 @@ definitions:
         type: string
       limit:
         type: string
+      sale_id:
+        type: integer
       tier:
         type: integer
     required:
     - caller_address
     - limit
+    - sale_id
     - tier
     type: object
   internal_launchpad.SubmitPrepareRequest:
@@ -394,11 +505,17 @@ definitions:
         allOf:
         - $ref: '#/definitions/internal_launchpad_domain.PrepareTxStatus'
         description: Status 交易当前状态。
+      targetAddress:
+        description: TargetAddress 目标合约地址（to），签名广播时使用。
+        type: string
       txHash:
         description: TxHash 链上交易哈希，广播后填充。
         type: string
       updatedAt:
         description: UpdatedAt 记录更新时间。
+        type: string
+      value:
+        description: Value 原生代币数量（wei），签名广播时使用。
         type: string
     type: object
   internal_launchpad_domain.PrepareTxOperationType:
@@ -780,6 +897,91 @@ paths:
       summary: 验证钱包签名
       tags:
       - 认证
+  /dev/contract/contracts:
+    get:
+      description: 返回所有已注册到 ABI 注册中心的合约名称列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      summary: 列出已注册合约
+      tags:
+      - 开发-合约查询
+  /dev/contract/contracts/{name}/methods:
+    get:
+      description: 根据合约名返回所有方法的签名、状态可变性和参数类型信息
+      parameters:
+      - description: 合约名称
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_chain.MethodInfo'
+                  type: array
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 列出合约方法
+      tags:
+      - 开发-合约查询
+  /dev/contract/query:
+    post:
+      consumes:
+      - application/json
+      description: 根据合约名和方法名动态调用合约，view/pure 方法执行只读查询，其他方法签名广播交易
+      parameters:
+      - description: 合约调用请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_chain.ContractQueryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_chain.ContractQueryResult'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 通用合约调用
+      tags:
+      - 开发-合约查询
   /launchpad/admin/chain-state/refresh:
     post:
       consumes:
@@ -1276,6 +1478,34 @@ paths:
       summary: 更新代币信息
       tags:
       - Launchpad-管理员
+  /launchpad/dev/prepare/execute/{id}:
+    post:
+      description: 开发环境一键签名广播 PrepareTx（仅 debug/test 模式）
+      parameters:
+      - description: Prepare ID
+        example: 1
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Response'
+      summary: 开发执行 PrepareTx
+      tags:
+      - Launchpad-开发
   /launchpad/prepare/{id}:
     get:
       description: 根据 ID 获取 Prepare 交易的详细信息

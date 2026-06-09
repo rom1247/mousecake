@@ -2,7 +2,6 @@ package sync
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math/big"
@@ -23,7 +22,7 @@ type Backfiller struct {
 	checkpoint         *CheckpointRepository
 	chainID            int
 	processorID        string
-	addresses          []string
+	addresses          []common.Address
 	confirmationBlocks int64
 	cfg                config.BackfillConfig
 }
@@ -45,7 +44,7 @@ func NewBackfiller(
 		checkpoint:         checkpoint,
 		chainID:            chainID,
 		processorID:        processorID,
-		addresses:          addresses,
+		addresses:          parseStringAddresses(addresses),
 		confirmationBlocks: confirmationBlocks,
 		cfg:                cfg,
 	}
@@ -104,7 +103,7 @@ func (b *Backfiller) Run(ctx context.Context, startBlock int64) error {
 		}
 
 		if len(logs) > 0 {
-			events := b.convertLogs(logs)
+			events := convertLogs(logs, b.chainID, b.processorID)
 			if _, err := b.store.BatchInsert(ctx, events); err != nil {
 				return fmt.Errorf("写入区块 %d-%d 事件: %w", fromBlock, toBlock, err)
 			}
@@ -143,48 +142,7 @@ func (b *Backfiller) fetchLogs(ctx context.Context, fromBlock, toBlock int64) ([
 	query := ethereum.FilterQuery{
 		FromBlock: big.NewInt(fromBlock),
 		ToBlock:   big.NewInt(toBlock),
-		Addresses: b.parseAddresses(),
+		Addresses: b.addresses,
 	}
 	return b.pool.FilterLogs(ctx, query)
-}
-
-// convertLogs 将链上日志转换为 ChainEvent。
-func (b *Backfiller) convertLogs(logs []types.Log) []ChainEvent {
-	events := make([]ChainEvent, 0, len(logs))
-	for _, log := range logs {
-		eventData, _ := json.Marshal(map[string]any{
-			"topics":     topicsToHex(log.Topics),
-			"data":       fmt.Sprintf("0x%x", log.Data),
-			"block_hash": log.BlockHash.Hex(),
-			"removed":    log.Removed,
-		})
-
-		events = append(events, ChainEvent{
-			ChainID:         b.chainID,
-			BlockNumber:     int64(log.BlockNumber),
-			TxHash:          log.TxHash.Hex(),
-			TxIndex:         int(log.TxIndex),
-			LogIndex:        int(log.Index),
-			ContractAddress: log.Address.Hex(),
-			EventName:       b.extractEventName(log),
-			EventData:       string(eventData),
-			Status:          StatusPending,
-			ProcessorID:     b.processorID,
-		})
-	}
-	return events
-}
-
-// parseAddresses 解析合约地址列表。
-func (b *Backfiller) parseAddresses() []common.Address {
-	addrs := make([]common.Address, 0, len(b.addresses))
-	for _, a := range b.addresses {
-		addrs = append(addrs, common.HexToAddress(a))
-	}
-	return addrs
-}
-
-// extractEventName 从日志 topics 中提取事件名称。
-func (b *Backfiller) extractEventName(log types.Log) string {
-	return extractEventNameFromLog(log)
 }

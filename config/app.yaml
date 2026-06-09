@@ -17,7 +17,7 @@ database:
   max_idle_conns: 10
   conn_max_lifetime: 30m
   conn_max_idle_time: 5m
-  log_level: info
+  log_level: warn
   slow_threshold: 200ms
 
 jwt:
@@ -39,9 +39,7 @@ admin:
 
 chains:
   allowed_chain_ids:
-    - 1
-    - 5
-    - 11155111
+    - 84532
 log:
   level: info
   format: json
@@ -58,8 +56,8 @@ quote:
 
 sync:
   chains:
-    - chain_id: 11155111
-      start_block: 0
+    - chain_id: 84532
+      start_block: 42602302
       confirmation_blocks: 12
       block_interval: 12s
       processor_id: launchpad
@@ -68,6 +66,7 @@ sync:
         mouse_pad_by_tier: "${MOUSECAKE_SYNC_MOUSE_PAD_BY_TIER_ADDRESS}"
       nodes:
         - name: alchemy-sepolia
+          enabled: true
           ws_url: "wss://base-sepolia.g.alchemy.com/v2/${MOUSECAKE_ALCHEMY_API_KEY}"
           http_url: "https://base-sepolia.g.alchemy.com/v2/${MOUSECAKE_ALCHEMY_API_KEY}"
           priority: 0
@@ -77,10 +76,20 @@ sync:
             failure_threshold: 5
             timeout: 30s
             max_requests: 3
+#        - name: base-official-sepolia
+#          ws_url: "wss://base-sepolia.g.alchemy.com/v2/${MOUSECAKE_ALCHEMY_API_KEY}"
+#          http_url: "https://sepolia.base.org"
+#          priority: 0
+#          timeout: 10s
+#          rate_limit: 50
+#          circuit_breaker:
+#            failure_threshold: 5
+#            timeout: 30s
+#            max_requests: 3
   backfill:
-    initial_batch_size: 5000
-    min_batch_size: 500
-    max_batch_size: 10000
+    initial_batch_size: 5
+    min_batch_size: 5
+    max_batch_size: 5
     growth_factor: 1.2
   projector:
     max_workers: 4
@@ -90,3 +99,17 @@ sync:
   worker:
     shutdown_timeout: 30s
     health_port: 9090
+
+launchpad:
+  admin_private_key: "${MOUSECAKE_LAUNCHPAD_ADMIN_PRIVATE_KEY}"
+  rpc_url: "${MOUSECAKE_LAUNCHPAD_RPC_URL}"
+  chain_id:  84532
+  mouse_pad_by_tier_abi:
+  mouse_tier_abi:
+  mouse_tier_address:
+  mouse_pad_by_tier_address:
+  deployer_address: "0x09f47c15875824F87F499Fe4c395A7a97F4C0C5C"
+  prepare_expires_in: 1h
+  poll_interval: 5s
+  rpc_timeout: 10s
+

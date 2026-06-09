@@ -17,7 +17,86 @@
       "required": [
         "username",
         "password"
-      ]
+      ],
+      "description": "AdminConfig 包含初始管理员 seed 配置。"
+    },
+    "BackfillConfig": {
+      "properties": {
+        "initial_batch_size": {
+          "type": "integer",
+          "description": "InitialBatchSize 初始批次大小。"
+        },
+        "min_batch_size": {
+          "type": "integer",
+          "description": "MinBatchSize 最小批次大小。"
+        },
+        "max_batch_size": {
+          "type": "integer",
+          "description": "MaxBatchSize 最大批次大小。"
+        },
+        "growth_factor": {
+          "type": "number",
+          "description": "GrowthFactor 成功时批次增长因子。"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "initial_batch_size",
+        "min_batch_size",
+        "max_batch_size",
+        "growth_factor"
+      ],
+      "description": "BackfillConfig 历史回填配置。"
+    },
+    "ChainNodeConfig": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name 节点名称（用于日志和指标标签）。"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Enabled 是否启用该节点，未设置时默认启用。"
+        },
+        "ws_url": {
+          "type": "string",
+          "description": "WSURL WebSocket URL。"
+        },
+        "http_url": {
+          "type": "string",
+          "description": "HTTPURL HTTP RPC URL。"
+        },
+        "priority": {
+          "type": "integer",
+          "description": "Priority 优先级（数值越小优先级越高）。"
+        },
+        "timeout": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$",
+          "description": "Timeout RPC 调用超时。"
+        },
+        "rate_limit": {
+          "type": "number",
+          "description": "RateLimit 令牌桶限流（RPS），0 表示不限流。"
+        },
+        "circuit_breaker": {
+          "$ref": "#/$defs/CircuitBreakerConfig",
+          "description": "CircuitBreaker 熔断器配置。"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "ws_url",
+        "http_url",
+        "priority",
+        "timeout",
+        "rate_limit",
+        "circuit_breaker"
+      ],
+      "description": "ChainNodeConfig 单个 RPC 节点配置。"
     },
     "ChainsConfig": {
       "properties": {
@@ -32,7 +111,33 @@
       "type": "object",
       "required": [
         "allowed_chain_ids"
-      ]
+      ],
+      "description": "ChainsConfig 包含区块链相关配置。"
+    },
+    "CircuitBreakerConfig": {
+      "properties": {
+        "failure_threshold": {
+          "type": "integer",
+          "description": "FailureThreshold 连续失败次数阈值，触发熔断。"
+        },
+        "timeout": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$",
+          "description": "Timeout OPEN 状态持续时间。"
+        },
+        "max_requests": {
+          "type": "integer",
+          "description": "MaxRequests HALF-OPEN 状态最大探测请求数。"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "failure_threshold",
+        "timeout",
+        "max_requests"
+      ],
+      "description": "CircuitBreakerConfig 熔断器配置。"
     },
     "Config": {
       "properties": {
@@ -54,11 +159,17 @@
         "chains": {
           "$ref": "#/$defs/ChainsConfig"
         },
+        "log": {
+          "$ref": "#/$defs/LogConfig"
+        },
         "launchpad": {
           "$ref": "#/$defs/LaunchpadConfig"
         },
         "quote": {
           "$ref": "#/$defs/QuoteConfig"
+        },
+        "sync": {
+          "$ref": "#/$defs/SyncConfig"
         }
       },
       "additionalProperties": false,
@@ -70,9 +181,12 @@
         "rate_limit",
         "admin",
         "chains",
+        "log",
         "launchpad",
-        "quote"
-      ]
+        "quote",
+        "sync"
+      ],
+      "description": "Config 是应用全局配置结构体。"
     },
     "DatabaseConfig": {
       "properties": {
@@ -131,7 +245,8 @@
         "conn_max_idle_time",
         "log_level",
         "slow_threshold"
-      ]
+      ],
+      "description": "DatabaseConfig 包含数据库连接和连接池配置。"
     },
     "JWTConfig": {
       "properties": {
@@ -153,39 +268,57 @@
         "secret",
         "wallet_expire",
         "admin_expire"
-      ]
+      ],
+      "description": "JWTConfig 包含 JWT 签发配置。"
     },
     "LaunchpadConfig": {
       "properties": {
         "rpc_url": {
-          "type": "string"
+          "type": "string",
+          "description": "RPCURL 以太坊 RPC 节点地址。"
         },
         "chain_id": {
-          "type": "integer"
+          "type": "integer",
+          "description": "ChainID 链 ID。"
         },
         "mouse_pad_by_tier_abi": {
-          "type": "string"
+          "type": "string",
+          "description": "MousePadByTierABI MousePadByTier 合约 ABI 文件路径。"
         },
         "mouse_tier_abi": {
-          "type": "string"
+          "type": "string",
+          "description": "MouseTierABI MouseTier 合约 ABI 文件路径。"
         },
         "mouse_tier_address": {
-          "type": "string"
+          "type": "string",
+          "description": "MouseTierAddress MouseTier 合约地址。"
         },
         "mouse_pad_by_tier_address": {
-          "type": "string"
+          "type": "string",
+          "description": "MousePadByTierAddress MousePadByTier 合约地址。"
+        },
+        "deployer_address": {
+          "type": "string",
+          "description": "DeployerAddress Deployer 工厂合约地址，用于 createSale 操作的 to 地址。"
+        },
+        "admin_private_key": {
+          "type": "string",
+          "description": "AdminPrivateKey 管理员钱包私钥，仅开发环境用于签名广播交易。"
         },
         "prepare_expires_in": {
           "type": "string",
-          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$"
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$",
+          "description": "PrepareExpiresIn Prepare 交易过期时间。"
         },
         "poll_interval": {
           "type": "string",
-          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$"
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$",
+          "description": "PollInterval 兜底轮询间隔。"
         },
         "rpc_timeout": {
           "type": "string",
-          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$"
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$",
+          "description": "RPCTimeout RPC 调用超时。"
         }
       },
       "additionalProperties": false,
@@ -197,27 +330,90 @@
         "mouse_tier_abi",
         "mouse_tier_address",
         "mouse_pad_by_tier_address",
+        "deployer_address",
+        "admin_private_key",
         "prepare_expires_in",
         "poll_interval",
         "rpc_timeout"
-      ]
+      ],
+      "description": "LaunchpadConfig 包含 Launchpad IDO 模块配置。"
+    },
+    "LogConfig": {
+      "properties": {
+        "level": {
+          "type": "string",
+          "description": "Level 日志级别：debug/info/warn/error。"
+        },
+        "format": {
+          "type": "string",
+          "description": "Format 日志格式：json/text。"
+        },
+        "add_source": {
+          "type": "boolean",
+          "description": "AddSource 是否记录源码调用位置（文件名:行号）。"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "level",
+        "format",
+        "add_source"
+      ],
+      "description": "LogConfig 包含日志配置。"
+    },
+    "ProjectorConfig": {
+      "properties": {
+        "max_workers": {
+          "type": "integer",
+          "description": "MaxWorkers 最大并发 worker 数。"
+        },
+        "max_retries": {
+          "type": "integer",
+          "description": "MaxRetries 最大重试次数。"
+        },
+        "processing_timeout": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$",
+          "description": "ProcessingTimeout processing 状态超时时间。"
+        },
+        "poll_interval": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$",
+          "description": "PollInterval 轮询间隔。"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "max_workers",
+        "max_retries",
+        "processing_timeout",
+        "poll_interval"
+      ],
+      "description": "ProjectorConfig 异步投影配置。"
     },
     "ProviderConfig": {
       "properties": {
         "enabled": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Enabled 是否启用。"
         },
         "api_key": {
-          "type": "string"
+          "type": "string",
+          "description": "APIKey API 密钥。"
         },
         "secret_key": {
-          "type": "string"
+          "type": "string",
+          "description": "SecretKey API Secret（OKX 专用）。"
         },
         "passphrase": {
-          "type": "string"
+          "type": "string",
+          "description": "Passphrase API 密钥密码短语（OKX 专用）。"
         },
         "base_url": {
-          "type": "string"
+          "type": "string",
+          "description": "BaseURL 供应商 API 基础 URL。"
         }
       },
       "additionalProperties": false,
@@ -228,18 +424,21 @@
         "secret_key",
         "passphrase",
         "base_url"
-      ]
+      ],
+      "description": "ProviderConfig 单个报价供应商的配置。"
     },
     "QuoteConfig": {
       "properties": {
         "cache_ttl": {
-          "type": "integer"
+          "type": "integer",
+          "description": "CacheTTL 缓存 TTL（秒）。"
         },
         "providers": {
           "additionalProperties": {
             "$ref": "#/$defs/ProviderConfig"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Providers 各供应商配置。"
         }
       },
       "additionalProperties": false,
@@ -247,7 +446,8 @@
       "required": [
         "cache_ttl",
         "providers"
-      ]
+      ],
+      "description": "QuoteConfig 包含 Quote 报价聚合模块配置。"
     },
     "RateLimitConfig": {
       "properties": {
@@ -263,7 +463,8 @@
       "required": [
         "ip",
         "account"
-      ]
+      ],
+      "description": "RateLimitConfig 包含限流配置。"
     },
     "RateLimitRule": {
       "properties": {
@@ -279,7 +480,8 @@
       "required": [
         "rate",
         "burst"
-      ]
+      ],
+      "description": "RateLimitRule 定义单个维度的限流规则。"
     },
     "ServerConfig": {
       "properties": {
@@ -295,9 +497,129 @@
       "required": [
         "port",
         "mode"
-      ]
+      ],
+      "description": "ServerConfig 包含 HTTP 服务器配置。"
+    },
+    "SyncChainConfig": {
+      "properties": {
+        "chain_id": {
+          "type": "integer",
+          "description": "ChainID 链 ID（1=ETH 主网, 5=Goerli, 11155111=Sepolia）。"
+        },
+        "start_block": {
+          "type": "integer",
+          "description": "StartBlock 冷启动回填起始区块号。"
+        },
+        "confirmation_blocks": {
+          "type": "integer",
+          "description": "ConfirmationBlocks 确认区块数（防止链重组）。"
+        },
+        "block_interval": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$",
+          "description": "BlockInterval 出块间隔（用于 WS 僵死检测）。"
+        },
+        "processor_id": {
+          "type": "string",
+          "description": "ProcessorID 处理器标识（如 launchpad）。"
+        },
+        "contracts": {
+          "$ref": "#/$defs/SyncContractsConfig",
+          "description": "Contracts 合约地址配置。"
+        },
+        "nodes": {
+          "items": {
+            "$ref": "#/$defs/ChainNodeConfig"
+          },
+          "type": "array",
+          "description": "Nodes RPC 节点列表（按 priority 排序）。"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "chain_id",
+        "start_block",
+        "confirmation_blocks",
+        "block_interval",
+        "processor_id",
+        "contracts",
+        "nodes"
+      ],
+      "description": "SyncChainConfig 单条链的同步配置。"
+    },
+    "SyncConfig": {
+      "properties": {
+        "chains": {
+          "items": {
+            "$ref": "#/$defs/SyncChainConfig"
+          },
+          "type": "array",
+          "description": "Chains 多链同步配置，key 为 chain_id。"
+        },
+        "backfill": {
+          "$ref": "#/$defs/BackfillConfig",
+          "description": "Backfill 历史回填配置。"
+        },
+        "projector": {
+          "$ref": "#/$defs/ProjectorConfig",
+          "description": "Projector 异步投影配置。"
+        },
+        "worker": {
+          "$ref": "#/$defs/WorkerConfig",
+          "description": "Worker Worker 进程配置。"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "chains",
+        "backfill",
+        "projector",
+        "worker"
+      ],
+      "description": "SyncConfig 包含链上同步框架配置。"
+    },
+    "SyncContractsConfig": {
+      "properties": {
+        "mouse_tier": {
+          "type": "string",
+          "description": "MouseTier MouseTier 合约地址。"
+        },
+        "mouse_pad_by_tier": {
+          "type": "string",
+          "description": "MousePadByTier MousePadByTier 合约地址。"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "mouse_tier",
+        "mouse_pad_by_tier"
+      ],
+      "description": "SyncContractsConfig 合约地址配置。"
+    },
+    "WorkerConfig": {
+      "properties": {
+        "shutdown_timeout": {
+          "type": "string",
+          "pattern": "^[0-9]+(ns|us|ms|s|m|h)$",
+          "description": "ShutdownTimeout 优雅关停超时时间。"
+        },
+        "health_port": {
+          "type": "integer",
+          "description": "HealthPort 管理端口（健康检查 + Prometheus 指标）。"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "shutdown_timeout",
+        "health_port"
+      ],
+      "description": "WorkerConfig Worker 进程配置。"
     }
   },
   "title": "MouseCake Go 配置",
-  "description": "mousecake-go 应用的 YAML 配置文件 Schema"
+  "description": "mousecake 应用的 YAML 配置文件 Schema"
 }

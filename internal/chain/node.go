@@ -29,6 +29,7 @@ type node struct {
 	timeout   time.Duration
 	chainID   int
 	client    *ethclient.Client
+	wsClient  *ethclient.Client
 	rpcClient *rpc.Client
 	breakers  map[string]*gobreaker.CircuitBreaker
 	limiter   *rate.Limiter
@@ -108,6 +109,20 @@ func newNode(cfg config.ChainNodeConfig, chainID int, metrics *rpcMetrics) (*nod
 		breakers[method] = gobreaker.NewCircuitBreaker(cbCfg)
 	}
 
+	// 创建 WebSocket 客户端用于订阅（eth_subscribe 需要 WebSocket 连接）
+	var wsClient *ethclient.Client
+	if cfg.WSURL != "" {
+		wsc, err := ethclient.Dial(cfg.WSURL)
+		if err != nil {
+			client.Close()
+			if rpcClient != nil {
+				rpcClient.Close()
+			}
+			return nil, fmt.Errorf("连接 WS 节点 %s 失败: %w", cfg.Name, err)
+		}
+		wsClient = wsc
+	}
+
 	var limiter *rate.Limiter
 	if cfg.RateLimit > 0 {
 		limiter = rate.NewLimiter(rate.Limit(cfg.RateLimit), int(cfg.RateLimit))
@@ -120,6 +135,7 @@ func newNode(cfg config.ChainNodeConfig, chainID int, metrics *rpcMetrics) (*nod
 		timeout:   timeout,
 		chainID:   chainID,
 		client:    client,
+		wsClient:  wsClient,
 		rpcClient: rpcClient,
 		breakers:  breakers,
 		limiter:   limiter,
@@ -315,10 +331,13 @@ func (n *node) headerByNumber(ctx context.Context, number *big.Int) (*types.Head
 	return result.(*types.Header), nil
 }
 
-// subscribeLogs 订阅实时日志。
+// subscribeLogs 通过 WebSocket 客户端订阅实时日志（eth_subscribe 需要 WebSocket 连接）。
 func (n *node) subscribeLogs(ctx context.Context, query ethereum.FilterQuery) (chan types.Log, ethereum.Subscription, error) {
+	if n.wsClient == nil {
+		return nil, nil, errors.New("节点未配置 WebSocket URL，无法订阅日志")
+	}
 	ch := make(chan types.Log, 128)
-	sub, err := n.client.SubscribeFilterLogs(ctx, query, ch)
+	sub, err := n.wsClient.SubscribeFilterLogs(ctx, query, ch)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -382,6 +401,9 @@ func (n *node) suggestGasPrice(ctx context.Context) (*big.Int, error) {
 func (n *node) close() {
 	if n.client != nil {
 		n.client.Close()
+	}
+	if n.wsClient != nil {
+		n.wsClient.Close()
 	}
 	if n.rpcClient != nil {
 		n.rpcClient.Close()

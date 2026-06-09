@@ -239,6 +239,149 @@ const docTemplate = `{
                 }
             }
         },
+        "/dev/contract/contracts": {
+            "get": {
+                "description": "返回所有已注册到 ABI 注册中心的合约名称列表",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "开发-合约查询"
+                ],
+                "summary": "列出已注册合约",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/dev/contract/contracts/{name}/methods": {
+            "get": {
+                "description": "根据合约名返回所有方法的签名、状态可变性和参数类型信息",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "开发-合约查询"
+                ],
+                "summary": "列出合约方法",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "合约名称",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/internal_chain.MethodInfo"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/dev/contract/query": {
+            "post": {
+                "description": "根据合约名和方法名动态调用合约，view/pure 方法执行只读查询，其他方法签名广播交易",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "开发-合约查询"
+                ],
+                "summary": "通用合约调用",
+                "parameters": [
+                    {
+                        "description": "合约调用请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_chain.ContractQueryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_chain.ContractQueryResult"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
         "/launchpad/admin/chain-state/refresh": {
             "post": {
                 "description": "管理员按 scope 刷新链上合约状态（Sale/Pool/Tier/UserPool/Vesting）并更新数据库",
@@ -1042,6 +1185,48 @@ const docTemplate = `{
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launchpad/dev/prepare/execute/{id}": {
+            "post": {
+                "description": "开发环境一键签名广播 PrepareTx（仅 debug/test 模式）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Launchpad-开发"
+                ],
+                "summary": "开发执行 PrepareTx",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "example": 1,
+                        "description": "Prepare ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
                         }
                     },
                     "400": {
@@ -2024,6 +2209,143 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_chain.ArgInfo": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "Name 参数名。",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Type Solidity 类型字符串（如 uint256、address）。",
+                    "type": "string"
+                }
+            }
+        },
+        "internal_chain.ContractQueryRequest": {
+            "type": "object",
+            "required": [
+                "contract",
+                "method"
+            ],
+            "properties": {
+                "address": {
+                    "description": "Address 可选，指定合约地址（覆盖注册表中的默认地址）。",
+                    "type": "string"
+                },
+                "args": {
+                    "description": "Args 方法参数列表（JSON 值）。",
+                    "type": "array",
+                    "items": {}
+                },
+                "block": {
+                    "description": "Block 可选，查询的区块号（十六进制字符串或 \"latest\"/\"pending\"）。",
+                    "type": "string"
+                },
+                "contract": {
+                    "description": "Contract 合约名称（注册表中的名称）。",
+                    "type": "string"
+                },
+                "method": {
+                    "description": "Method 方法名称。",
+                    "type": "string"
+                }
+            }
+        },
+        "internal_chain.ContractQueryResult": {
+            "type": "object",
+            "properties": {
+                "block_number": {
+                    "description": "BlockNumber 交易所在区块号。",
+                    "type": "integer"
+                },
+                "events": {
+                    "description": "Events 写入调用触发的事件。",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_chain.ParsedEvent"
+                    }
+                },
+                "gas_used": {
+                    "description": "GasUsed 交易消耗的 gas。",
+                    "type": "integer"
+                },
+                "method": {
+                    "description": "Method 方法名称。",
+                    "type": "string"
+                },
+                "mutability": {
+                    "description": "Mutability 状态可变性。",
+                    "type": "string"
+                },
+                "outputs": {
+                    "description": "Outputs 只读调用的返回值列表（JSON 安全格式）。",
+                    "type": "array",
+                    "items": {}
+                },
+                "tx_hash": {
+                    "description": "TxHash 写入调用的交易哈希。",
+                    "type": "string"
+                }
+            }
+        },
+        "internal_chain.MethodInfo": {
+            "type": "object",
+            "properties": {
+                "input_types": {
+                    "description": "InputTypes 输入参数类型描述列表。",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_chain.ArgInfo"
+                    }
+                },
+                "mutability": {
+                    "description": "Mutability 状态可变性（view/pure/nonpayable/payable）。",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name 方法名。",
+                    "type": "string"
+                },
+                "output_types": {
+                    "description": "OutputTypes 输出参数类型描述列表。",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_chain.ArgInfo"
+                    }
+                },
+                "selector": {
+                    "description": "Selector 函数选择器（4 字节十六进制，如 \"0xedac985b\"）。",
+                    "type": "string"
+                }
+            }
+        },
+        "internal_chain.ParsedEvent": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "Address 触发事件的合约地址。",
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "fields": {
+                    "description": "Fields 事件字段的键值映射，big.Int 已转为十进制字符串，Address 已转为十六进制字符串。",
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "logIndex": {
+                    "description": "LogIndex 日志在区块中的索引。",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "Name 事件名称（如 \"Deposited\"、\"Harvested\"）。",
+                    "type": "string"
+                }
+            }
+        },
         "internal_launchpad.ChainStateRefreshRequest": {
             "type": "object",
             "required": [
@@ -2098,6 +2420,10 @@ const docTemplate = `{
                 "caller_address": {
                     "description": "CallerAddress 管理员地址。",
                     "type": "string"
+                },
+                "chain_id": {
+                    "description": "ChainID 链 ID。",
+                    "type": "integer"
                 },
                 "end_block": {
                     "description": "EndBlock 销售结束区块号。",
@@ -2212,7 +2538,8 @@ const docTemplate = `{
             "required": [
                 "caller_address",
                 "offering_amount",
-                "raising_amount"
+                "raising_amount",
+                "sale_id"
             ],
             "properties": {
                 "caller_address": {
@@ -2223,6 +2550,9 @@ const docTemplate = `{
                 },
                 "raising_amount": {
                     "type": "string"
+                },
+                "sale_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -2250,6 +2580,7 @@ const docTemplate = `{
             "required": [
                 "amount",
                 "caller_address",
+                "sale_id",
                 "to",
                 "token_address"
             ],
@@ -2259,6 +2590,9 @@ const docTemplate = `{
                 },
                 "caller_address": {
                     "type": "string"
+                },
+                "sale_id": {
+                    "type": "integer"
                 },
                 "to": {
                     "type": "string"
@@ -2401,6 +2735,7 @@ const docTemplate = `{
             "required": [
                 "caller_address",
                 "limit",
+                "sale_id",
                 "tier"
             ],
             "properties": {
@@ -2409,6 +2744,9 @@ const docTemplate = `{
                 },
                 "limit": {
                     "type": "string"
+                },
+                "sale_id": {
+                    "type": "integer"
                 },
                 "tier": {
                     "type": "integer"
@@ -2574,12 +2912,20 @@ const docTemplate = `{
                         }
                     ]
                 },
+                "targetAddress": {
+                    "description": "TargetAddress 目标合约地址（to），签名广播时使用。",
+                    "type": "string"
+                },
                 "txHash": {
                     "description": "TxHash 链上交易哈希，广播后填充。",
                     "type": "string"
                 },
                 "updatedAt": {
                     "description": "UpdatedAt 记录更新时间。",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "Value 原生代币数量（wei），签名广播时使用。",
                     "type": "string"
                 }
             }

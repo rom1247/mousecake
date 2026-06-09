@@ -147,6 +147,8 @@ type SyncConfig struct {
 	Projector ProjectorConfig `json:"projector" mapstructure:"projector"`
 	// Worker Worker 进程配置。
 	Worker WorkerConfig `json:"worker" mapstructure:"worker"`
+	// CompensateInterval 补偿循环间隔，定期用 FilterLogs 补偿可能遗漏的事件。
+	CompensateInterval time.Duration `json:"compensate_interval" mapstructure:"compensate_interval"`
 }
 
 // SyncChainConfig 单条链的同步配置。
@@ -157,7 +159,7 @@ type SyncChainConfig struct {
 	StartBlock int64 `json:"start_block" mapstructure:"start_block"`
 	// ConfirmationBlocks 确认区块数（防止链重组）。
 	ConfirmationBlocks int64 `json:"confirmation_blocks" mapstructure:"confirmation_blocks"`
-	// BlockInterval 出块间隔（用于 WS 僵死检测）。
+	// BlockInterval 出块间隔。
 	BlockInterval time.Duration `json:"block_interval" mapstructure:"block_interval"`
 	// ProcessorID 处理器标识（如 launchpad）。
 	ProcessorID string `json:"processor_id" mapstructure:"processor_id"`
@@ -179,6 +181,8 @@ type SyncContractsConfig struct {
 type ChainNodeConfig struct {
 	// Name 节点名称（用于日志和指标标签）。
 	Name string `json:"name" mapstructure:"name"`
+	// Enabled 是否启用该节点，未设置时默认启用。
+	Enabled *bool `json:"enabled,omitempty" mapstructure:"enabled"`
 	// WSURL WebSocket URL。
 	WSURL string `json:"ws_url" mapstructure:"ws_url"`
 	// HTTPURL HTTP RPC URL。
@@ -191,6 +195,14 @@ type ChainNodeConfig struct {
 	RateLimit float64 `json:"rate_limit" mapstructure:"rate_limit"`
 	// CircuitBreaker 熔断器配置。
 	CircuitBreaker CircuitBreakerConfig `json:"circuit_breaker" mapstructure:"circuit_breaker"`
+}
+
+// IsEnabled 返回节点是否启用，未设置时默认启用。
+func (c ChainNodeConfig) IsEnabled() bool {
+	if c.Enabled == nil {
+		return true
+	}
+	return *c.Enabled
 }
 
 // CircuitBreakerConfig 熔断器配置。
@@ -399,4 +411,5 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("sync.projector.poll_interval", 1*time.Second)
 	v.SetDefault("sync.worker.shutdown_timeout", 30*time.Second)
 	v.SetDefault("sync.worker.health_port", 9090)
+	v.SetDefault("sync.compensate_interval", 5*time.Minute)
 }

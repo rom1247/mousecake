@@ -3,10 +3,12 @@ package chain
 import (
 	"context"
 	"crypto/ecdsa"
+	"errors"
 	"fmt"
 	"log/slog"
 	"math/big"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -53,6 +55,7 @@ func (s *Signer) Address() common.Address {
 func (s *Signer) SignAndBroadcast(ctx context.Context, to common.Address, data []byte, value *big.Int) (common.Hash, error) {
 	var txHash common.Hash
 
+	slog.Info("正在签名广播交易...", "address", s.address.Hex())
 	// 1. 查询 pending nonce
 	nonce, err := s.pool.PendingNonceAt(ctx, s.address)
 	if err != nil {
@@ -146,4 +149,35 @@ func (s *Signer) SignAndBroadcast(ctx context.Context, to common.Address, data [
 	)
 
 	return txHash, nil
+}
+
+// WaitForReceipt 轮询等待交易 receipt，直到交易上链或超时。
+// 仅供开发环境使用。如果 ctx 没有 deadline，默认超时 60s，轮询间隔 1s。
+func (s *Signer) WaitForReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
+	// 如果 ctx 没有 deadline，创建 60s 超时的子 context
+	if _, ok := ctx.Deadline(); !ok {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, 60*time.Second)
+		defer cancel()
+	}
+
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		receipt, err := s.pool.TransactionReceipt(ctx, txHash)
+		if err != nil && !errors.Is(err, ethereum.NotFound) {
+			return nil, fmt.Errorf("查询 receipt %s: %w", txHash.Hex(), err)
+		}
+		if receipt != nil {
+			return receipt, nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("等待 receipt 超时 (tx=%s): %w", txHash.Hex(), ctx.Err())
+		case <-ticker.C:
+			// 继续轮询
+		}
+	}
 }

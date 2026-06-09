@@ -549,10 +549,10 @@ func TestHandler_GetPrepareTx_ReturnsTxStructure(t *testing.T) {
 
 // mockDevExecutor 是 DevExecutor 接口的 mock 实现。
 type mockDevExecutor struct {
-	executeFn func(ctx context.Context, id int64) (string, error)
+	executeFn func(ctx context.Context, id int64) (*DevExecuteResult, error)
 }
 
-func (m *mockDevExecutor) Execute(ctx context.Context, id int64) (string, error) {
+func (m *mockDevExecutor) Execute(ctx context.Context, id int64) (*DevExecuteResult, error) {
 	return m.executeFn(ctx, id)
 }
 
@@ -566,9 +566,14 @@ func newTestHandlerWithDevExec(executor DevExecutor) *Handler {
 // TestHandler_DevExecute_Success 测试 dev execute handler 成功执行。
 func TestHandler_DevExecute_Success(t *testing.T) {
 	executor := &mockDevExecutor{
-		executeFn: func(_ context.Context, id int64) (string, error) {
+		executeFn: func(_ context.Context, id int64) (*DevExecuteResult, error) {
 			assert.Equal(t, int64(1), id)
-			return "0xExecutedTxHash", nil
+			return &DevExecuteResult{
+				TxHash:      "0xExecutedTxHash",
+				BlockNumber: 123,
+				GasUsed:     21000,
+				Status:      1,
+			}, nil
 		},
 	}
 	h := newTestHandlerWithDevExec(executor)
@@ -596,9 +601,9 @@ func TestHandler_DevExecute_Success(t *testing.T) {
 // TestHandler_DevExecute_InvalidID 测试 dev execute handler 路径参数无效。
 func TestHandler_DevExecute_InvalidID(t *testing.T) {
 	executor := &mockDevExecutor{
-		executeFn: func(_ context.Context, _ int64) (string, error) {
+		executeFn: func(_ context.Context, _ int64) (*DevExecuteResult, error) {
 			t.Fatal("不应调用 Execute")
-			return "", nil
+			return nil, nil
 		},
 	}
 	h := newTestHandlerWithDevExec(executor)
@@ -614,8 +619,8 @@ func TestHandler_DevExecute_InvalidID(t *testing.T) {
 // TestHandler_DevExecute_PrepareTxNotFound 测试 dev execute handler PrepareTx 不存在。
 func TestHandler_DevExecute_PrepareTxNotFound(t *testing.T) {
 	executor := &mockDevExecutor{
-		executeFn: func(_ context.Context, _ int64) (string, error) {
-			return "", domain.ErrNotFound
+		executeFn: func(_ context.Context, _ int64) (*DevExecuteResult, error) {
+			return nil, domain.ErrNotFound
 		},
 	}
 	h := newTestHandlerWithDevExec(executor)

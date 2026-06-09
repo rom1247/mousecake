@@ -84,8 +84,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	if cfg.Server.Mode == "release" {
+	switch cfg.Server.Mode {
+	case "release":
 		gin.SetMode(gin.ReleaseMode)
+	case "test":
+		gin.SetMode(gin.TestMode)
+	default:
+		gin.SetMode(gin.DebugMode)
 	}
 
 	r := gin.New()
@@ -187,18 +192,38 @@ func main() {
 	chainRefreshRepo := launchpad.NewChainRefreshRepository(db)
 	chainRefreshSvc := launchpad.NewChainRefreshService(chainReader, chainRefreshRepo, saleRepo)
 
-	// 创建 DevExecuteService（仅非 release 模式且有私钥时）
-	var devExecuteSvc launchpad.DevExecutor
+	// 创建 Signer（非 release 模式且有私钥时）
+	var signer *chain.Signer
 	if gin.Mode() != gin.ReleaseMode && cfg.Launchpad.AdminPrivateKey != "" {
 		signerChainID := big.NewInt(int64(launchpadChain.ChainID))
-		signer, err := chain.NewSigner(cfg.Launchpad.AdminPrivateKey, nodePool, signerChainID)
+		signer, err = chain.NewSigner(cfg.Launchpad.AdminPrivateKey, nodePool, signerChainID)
 		if err != nil {
 			slog.Error("创建 Signer 失败", "error", err)
 			os.Exit(1)
 		}
-		slog.Info("Signer 初始化完成", "address", signer.Address().Hex())
+		slog.Info("Signer 初始化完成", "address", signer.Address())
+	}
 
+	// 创建 DevExecuteService
+	var devExecuteSvc launchpad.DevExecutor
+	if signer != nil {
 		devExecuteSvc = launchpad.NewDevExecuteService(prepareRepo, signer)
+	}
+
+	// 创建通用合约查询服务（仅非 release 模式）
+	if gin.Mode() != gin.ReleaseMode {
+		contractRegistry := chain.NewABIRegistry()
+		addresses := map[string]string{
+			"MousePadByTier":         cfg.Launchpad.MousePadByTierAddress,
+			"MousePadByTierDeployer": cfg.Launchpad.DeployerAddress,
+			"MouseTier":              cfg.Launchpad.MouseTierAddress,
+		}
+		chain.RegisterAllContracts(contractRegistry, addresses)
+		eventParser := chain.NewEventParser()
+		devContractSvc := chain.NewDevContractService(contractRegistry, nodePool, signer, eventParser)
+		devContractHandler := chain.NewDevContractHandler(devContractSvc)
+		devContractHandler.RegisterRoutes(r.Group("/api/v1"))
+		slog.Info("通用合约查询服务已注册", "contracts", contractRegistry.ListContracts())
 	}
 
 	// 创建 Handler 并注册路由
@@ -210,7 +235,7 @@ func main() {
 	if pollInterval == 0 {
 		pollInterval = 1 * time.Minute
 	}
-	go runPreparePollTask(context.Background(), prepareSvc, pollInterval)
+	//go runPreparePollTask(context.Background(), prepareSvc, pollInterval)
 
 	slog.Info("Launchpad 模块初始化完成")
 

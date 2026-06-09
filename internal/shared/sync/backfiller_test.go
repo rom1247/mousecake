@@ -16,8 +16,8 @@ import (
 	"github.com/mousecake-go/mousecake-go/config"
 )
 
-// TestBackfiller_parseAddresses 测试合约地址字符串解析为 common.Address。
-func TestBackfiller_parseAddresses(t *testing.T) {
+// TestParseStringAddresses 测试合约地址字符串解析为 common.Address。
+func TestParseStringAddresses(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -49,11 +49,7 @@ func TestBackfiller_parseAddresses(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			b := &Backfiller{
-				addresses: tt.addresses,
-			}
-
-			addrs := b.parseAddresses()
+			addrs := parseStringAddresses(tt.addresses)
 			assert.Len(t, addrs, tt.wantCount)
 			if tt.wantCount > 0 {
 				assert.Equal(t, tt.wantFirst, addrs[0].Hex())
@@ -62,19 +58,19 @@ func TestBackfiller_parseAddresses(t *testing.T) {
 	}
 }
 
-// TestBackfiller_convertLogs 测试链上日志转换为 ChainEvent 列表。
-func TestBackfiller_convertLogs(t *testing.T) {
+// TestConvertLogs 测试链上日志转换为 ChainEvent 列表。
+func TestConvertLogs(t *testing.T) {
 	t.Parallel()
+
+	const (
+		testChainID     = 1
+		testProcessorID = "test-processor"
+	)
 
 	txHash := common.HexToHash("0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890")
 	contractAddr := common.HexToAddress("0x1234567890abcdef1234567890abcdef1234567890")
 	topic := common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")
 	blockHash := common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000001")
-
-	b := &Backfiller{
-		chainID:     1,
-		processorID: "test-processor",
-	}
 
 	tests := []struct {
 		name       string
@@ -138,7 +134,7 @@ func TestBackfiller_convertLogs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			events := b.convertLogs(tt.logs)
+			events := convertLogs(tt.logs, testChainID, testProcessorID)
 			assert.Len(t, events, tt.wantCount)
 
 			if tt.wantCount > 0 {
@@ -152,19 +148,14 @@ func TestBackfiller_convertLogs(t *testing.T) {
 	}
 }
 
-// TestBackfiller_convertLogs_FieldMapping 测试 convertLogs 的字段映射准确性。
-func TestBackfiller_convertLogs_FieldMapping(t *testing.T) {
+// TestConvertLogs_FieldMapping 测试 convertLogs 的字段映射准确性。
+func TestConvertLogs_FieldMapping(t *testing.T) {
 	t.Parallel()
 
 	txHash := common.HexToHash("0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890")
 	contractAddr := common.HexToAddress("0x1234567890abcdef1234567890abcdef1234567890")
 	topic := common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")
 	blockHash := common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000001")
-
-	b := &Backfiller{
-		chainID:     137,
-		processorID: "launchpad",
-	}
 
 	log := types.Log{
 		Address:     contractAddr,
@@ -178,7 +169,7 @@ func TestBackfiller_convertLogs_FieldMapping(t *testing.T) {
 		Removed:     false,
 	}
 
-	events := b.convertLogs([]types.Log{log})
+	events := convertLogs([]types.Log{log}, 137, "launchpad")
 	requireLen(t, events, 1)
 
 	ev := events[0]
@@ -191,7 +182,6 @@ func TestBackfiller_convertLogs_FieldMapping(t *testing.T) {
 	assert.Equal(t, "0xddf252ad", ev.EventName)
 	assert.Equal(t, StatusPending, ev.Status)
 	assert.Equal(t, "launchpad", ev.ProcessorID)
-	// EventData 应包含 topics、data、block_hash、removed 字段
 	assert.Contains(t, ev.EventData, "topics")
 	assert.Contains(t, ev.EventData, "data")
 }
@@ -216,7 +206,7 @@ func TestBackfiller_NewBackfiller(t *testing.T) {
 	}
 
 	b := NewBackfiller(
-		nil, // pool — 在单元测试中不需要
+		nil, // pool
 		nil, // store
 		nil, // checkpoint
 		1,   // chainID
@@ -230,6 +220,7 @@ func TestBackfiller_NewBackfiller(t *testing.T) {
 	assert.Equal(t, 1, b.chainID)
 	assert.Equal(t, "test-processor", b.processorID)
 	assert.Len(t, b.addresses, 1)
+	assert.Equal(t, common.HexToAddress("0x1111111111111111111111111111111111111111"), b.addresses[0])
 	assert.Equal(t, int64(12), b.confirmationBlocks)
 	assert.Equal(t, 100, b.cfg.InitialBatchSize)
 	assert.Equal(t, 1.5, b.cfg.GrowthFactor)

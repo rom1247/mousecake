@@ -47,6 +47,58 @@ type TxParams struct {
 	Value string `json:"value"`
 }
 
+// DevExecuteResponse 开发执行接口的响应结构，包含 receipt 和事件解析数据。
+type DevExecuteResponse struct {
+	// ID 数据库主键。
+	ID int64 `json:"id"`
+	// SaleID 关联的销售 ID。
+	SaleID *int64 `json:"sale_id,omitempty"`
+	// PoolIndex 关联的池序号。
+	PoolIndex *int64 `json:"pool_index,omitempty"`
+	// OperationType 操作类型。
+	OperationType string `json:"operation_type"`
+	// CallerAddress 调用者地址。
+	CallerAddress string `json:"caller_address"`
+	// Status 交易状态。
+	Status string `json:"status"`
+	// Tx 交易参数。
+	Tx TxParams `json:"tx"`
+	// ExpiresAt 过期时间。
+	ExpiresAt time.Time `json:"expires_at"`
+	// CreatedAt 创建时间。
+	CreatedAt time.Time `json:"created_at"`
+	// UpdatedAt 更新时间。
+	UpdatedAt time.Time `json:"updated_at"`
+	// Receipt 交易 receipt 摘要信息。
+	Receipt *ReceiptResult `json:"receipt,omitempty"`
+	// Events 解析后的事件列表。
+	Events []EventResponse `json:"events,omitempty"`
+}
+
+// ReceiptResult 交易 receipt 摘要信息。
+type ReceiptResult struct {
+	// TxHash 交易哈希。
+	TxHash string `json:"tx_hash"`
+	// BlockNumber 区块号。
+	BlockNumber uint64 `json:"block_number"`
+	// GasUsed 消耗的 gas。
+	GasUsed uint64 `json:"gas_used"`
+	// Status 交易状态（1=成功，0=失败）。
+	Status uint64 `json:"status"`
+}
+
+// EventResponse 解析后的事件响应结构。
+type EventResponse struct {
+	// Name 事件名称。
+	Name string `json:"name"`
+	// Fields 事件字段值。
+	Fields map[string]any `json:"fields"`
+	// Address 合约地址。
+	Address string `json:"address"`
+	// LogIndex 日志索引。
+	LogIndex uint `json:"log_index"`
+}
+
 // toPrepareTxResponse 将 domain.PrepareTx 转换为 HTTP 响应结构。
 func toPrepareTxResponse(tx *domain.PrepareTx) PrepareTxResponse {
 	return PrepareTxResponse{
@@ -69,8 +121,8 @@ func toPrepareTxResponse(tx *domain.PrepareTx) PrepareTxResponse {
 
 // DevExecutor 开发环境一键执行 PrepareTx 的用例接口。
 type DevExecutor interface {
-	// Execute 一键执行指定 ID 的 PrepareTx，返回交易哈希。
-	Execute(ctx context.Context, id int64) (string, error)
+	// Execute 一键执行指定 ID 的 PrepareTx，返回交易结果（含事件）。
+	Execute(ctx context.Context, id int64) (*DevExecuteResult, error)
 }
 
 // Handler 注册 launchpad 模块的 HTTP 路由。
@@ -181,7 +233,8 @@ func (h *Handler) adminCreateSale(c *gin.Context) {
 		response.Error(c, http.StatusInternalServerError, 500, err.Error())
 		return
 	}
-	response.Success(c, toPrepareTxResponse(tx))
+	prepareTxResponse := toPrepareTxResponse(tx)
+	response.Success(c, prepareTxResponse)
 }
 
 // adminSetPool 设置池参数。
@@ -921,21 +974,62 @@ func (h *Handler) getPrepare(c *gin.Context) {
 //	@Failure      500  {object}  response.Response
 //	@Router       /launchpad/dev/prepare/execute/{id} [post]
 func (h *Handler) devExecute(c *gin.Context) {
+	if h.devExecuteSvc == nil {
+		response.Error(c, http.StatusServiceUnavailable, 503, "DevExecute 服务未配置，请检查 AdminPrivateKey")
+		return
+	}
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.Error(c, http.StatusBadRequest, 400, "无效 ID")
 		return
 	}
-	_, err = h.devExecuteSvc.Execute(c.Request.Context(), id)
+	result, err := h.devExecuteSvc.Execute(c.Request.Context(), id)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, 500, err.Error())
 		return
 	}
-	// 执行成功后查询最新状态返回
+	// 查询最新状态
 	tx, err := h.prepareSvc.GetByID(c.Request.Context(), id)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, 500, err.Error())
 		return
 	}
-	response.Success(c, toPrepareTxResponse(tx))
+	response.Success(c, toDevExecuteResponse(tx, result))
+}
+
+// toDevExecuteResponse 将 PrepareTx 和 DevExecuteResult 合并为开发执行响应。
+func toDevExecuteResponse(tx *domain.PrepareTx, result *DevExecuteResult) DevExecuteResponse {
+	resp := DevExecuteResponse{
+		ID:            tx.ID,
+		SaleID:        tx.SaleID,
+		PoolIndex:     tx.PoolIndex,
+		OperationType: string(tx.OperationType),
+		CallerAddress: tx.CallerAddress,
+		Status:        string(tx.Status),
+		Tx: TxParams{
+			To:    tx.TargetAddress,
+			Data:  tx.Calldata,
+			Value: tx.Value,
+		},
+		ExpiresAt: tx.ExpiresAt,
+		CreatedAt: tx.CreatedAt,
+		UpdatedAt: tx.UpdatedAt,
+	}
+	if result != nil {
+		resp.Receipt = &ReceiptResult{
+			TxHash:      result.TxHash,
+			BlockNumber: result.BlockNumber,
+			GasUsed:     result.GasUsed,
+			Status:      result.Status,
+		}
+		for _, e := range result.Events {
+			resp.Events = append(resp.Events, EventResponse{
+				Name:     e.Name,
+				Fields:   e.Fields,
+				Address:  e.Address.Hex(),
+				LogIndex: e.LogIndex,
+			})
+		}
+	}
+	return resp
 }

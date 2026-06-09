@@ -48,8 +48,13 @@ func main() {
 		AddSource: cfg.Log.AddSource,
 	})
 
-	if cfg.Server.Mode == "release" {
+	switch cfg.Server.Mode {
+	case "release":
 		gin.SetMode(gin.ReleaseMode)
+	case "test":
+		gin.SetMode(gin.TestMode)
+	default:
+		gin.SetMode(gin.DebugMode)
 	}
 
 	db, err := database.NewPostgres(cfg.Database)

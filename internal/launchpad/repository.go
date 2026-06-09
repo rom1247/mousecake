@@ -988,6 +988,9 @@ func (r *PrepareTxRepository) Create(ctx context.Context, tx *domain.PrepareTx) 
 
 // UpdateStatus 更新 Prepare 交易状态。
 func (r *PrepareTxRepository) UpdateStatus(ctx context.Context, id int64, status domain.PrepareTxStatus, updates map[string]any) error {
+	if updates == nil {
+		updates = make(map[string]any)
+	}
 	updates["status"] = string(status)
 	updates["updated_at"] = time.Now()
 
