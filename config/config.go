@@ -18,6 +18,7 @@ type Config struct {
 	Server    ServerConfig    `json:"server" mapstructure:"server"`
 	Database  DatabaseConfig  `json:"database" mapstructure:"database"`
 	JWT       JWTConfig       `json:"jwt" mapstructure:"jwt"`
+	CORS      CORSConfig      `json:"cors" mapstructure:"cors"`
 	RateLimit RateLimitConfig `json:"rate_limit" mapstructure:"rate_limit"`
 	Admin     AdminConfig     `json:"admin" mapstructure:"admin"`
 	Chains    ChainsConfig    `json:"chains" mapstructure:"chains"`
@@ -54,6 +55,22 @@ type JWTConfig struct {
 	Secret       string        `json:"secret" mapstructure:"secret"`
 	WalletExpire time.Duration `json:"wallet_expire" mapstructure:"wallet_expire"`
 	AdminExpire  time.Duration `json:"admin_expire" mapstructure:"admin_expire"`
+}
+
+// CORSConfig 包含跨域资源共享（CORS）配置。
+type CORSConfig struct {
+	// AllowOrigins 允许的 Origin 白名单，生产环境禁止使用 "*"。
+	AllowOrigins []string `json:"allow_origins" mapstructure:"allow_origins"`
+	// AllowMethods 允许的 HTTP 方法。
+	AllowMethods []string `json:"allow_methods" mapstructure:"allow_methods"`
+	// AllowHeaders 允许的请求头。
+	AllowHeaders []string `json:"allow_headers" mapstructure:"allow_headers"`
+	// ExposeHeaders 允许前端访问的响应头。
+	ExposeHeaders []string `json:"expose_headers" mapstructure:"expose_headers"`
+	// AllowCredentials 是否允许携带凭证（Cookie 等）。
+	AllowCredentials bool `json:"allow_credentials" mapstructure:"allow_credentials"`
+	// MaxAge 预检请求缓存时间。
+	MaxAge time.Duration `json:"max_age" mapstructure:"max_age"`
 }
 
 // RateLimitConfig 包含限流配置。
@@ -343,6 +360,8 @@ func bindEnvVars(v *viper.Viper) {
 		"database.max_idle_conns", "database.conn_max_lifetime", "database.conn_max_idle_time",
 		"database.log_level", "database.slow_threshold",
 		"jwt.secret", "jwt.wallet_expire", "jwt.admin_expire",
+		"cors.allow_origins", "cors.allow_methods", "cors.allow_headers",
+		"cors.expose_headers", "cors.allow_credentials", "cors.max_age",
 		"rate_limit.ip.rate", "rate_limit.ip.burst",
 		"rate_limit.account.rate", "rate_limit.account.burst",
 		"admin.username", "admin.password",
@@ -377,6 +396,13 @@ func setDefaults(v *viper.Viper) {
 	// JWT
 	v.SetDefault("jwt.wallet_expire", 15*time.Minute)
 	v.SetDefault("jwt.admin_expire", 15*time.Minute)
+
+	// CORS
+	v.SetDefault("cors.allow_origins", []string{"http://localhost:3000"})
+	v.SetDefault("cors.allow_methods", []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"})
+	v.SetDefault("cors.allow_headers", []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Request-ID"})
+	v.SetDefault("cors.allow_credentials", true)
+	v.SetDefault("cors.max_age", 12*time.Hour)
 
 	// 限流
 	v.SetDefault("rate_limit.ip.rate", 20)

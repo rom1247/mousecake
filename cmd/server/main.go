@@ -98,6 +98,7 @@ func main() {
 		gin.Recovery(),
 		middleware.RequestID(),
 		middleware.AccessLog(slog.Default()),
+		middleware.NewCORS(cfg.CORS),
 	)
 	handler.RegisterRoutes(r.Group("/api/v1/auth"))
 
